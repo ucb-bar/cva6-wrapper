@@ -195,11 +195,8 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
     val sizes   = Seq(p(ExtMem).get.master.size, BigInt(0x0), BigInt(0x0), BigInt(0x0), BigInt(0x0))
     (bases, sizes)
   } else {
-    // TODO: doesn't work since they determine if it is cacheable based on BASE[....:INDEX] where INDEX == 12 by default
-    //val bases = Seq(                                                          fromhostAddr + 0x40,              p(ExtMem).get.master.base, BigInt(0x0), BigInt(0x0), BigInt(0x0))
-    //val sizes = Seq(p(ExtMem).get.master.size - (fromhostAddr + 0x40 - p(ExtMem).get.master.base), tohostAddr - p(ExtMem).get.master.base, BigInt(0x0), BigInt(0x0), BigInt(0x0))
-    val bases = Seq(p(ExtMem).get.master.base + BigInt(0x2000), BigInt(0x0), BigInt(0x0), BigInt(0x0), BigInt(0x0))
-    val sizes = Seq(p(ExtMem).get.master.size - BigInt(0x2000), tohostAddr - p(ExtMem).get.master.base, BigInt(0x0), BigInt(0x0), BigInt(0x0))
+    val bases = Seq(                                                          fromhostAddr + 0x40,              p(ExtMem).get.master.base, BigInt(0x0), BigInt(0x0), BigInt(0x0))
+    val sizes = Seq(p(ExtMem).get.master.size - (fromhostAddr + 0x40 - p(ExtMem).get.master.base), tohostAddr - p(ExtMem).get.master.base, BigInt(0x0), BigInt(0x0), BigInt(0x0))
     (bases, sizes)
   }
   val cacheableRegionCnt   = cacheableRegionBases.length

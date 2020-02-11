@@ -145,22 +145,27 @@ class ArianeCoreBlackbox(
   require((exeRegCnt <= 5) && (exeRegBase.length <= 5) && (exeRegSz.length <= 5), "Only supports 5 execution regions")
   require((cacheRegCnt <= 5) && (cacheRegBase.length <= 5) && (cacheRegSz.length <= 5), "Only supports 5 cacheable regions")
 
+  // note: order matters for files below
+
   // add wrapper/blackbox
   addResource("/vsrc/ArianeCoreBlackbox.sv")
 
   // add srcs
   addResource("/vsrc/ariane/src/common_cells/src/shift_reg.sv")
+  addResource("/vsrc/ariane/src/common_cells/src/deprecated/rrarbiter.sv")
   addResource("/vsrc/ariane/src/common_cells/src/lfsr_8bit.sv")
   addResource("/vsrc/ariane/src/common_cells/src/rr_arb_tree.sv")
   addResource("/vsrc/ariane/src/common_cells/src/popcount.sv")
   addResource("/vsrc/ariane/src/common_cells/src/lzc.sv")
   addResource("/vsrc/ariane/src/common_cells/src/fifo_v3.sv")
+  addResource("/vsrc/ariane/src/common_cells/src/deprecated/fifo_v2.sv")
   addResource("/vsrc/ariane/src/common_cells/src/stream_arbiter_flushable.sv")
   addResource("/vsrc/ariane/src/common_cells/src/stream_arbiter.sv")
   addResource("/vsrc/ariane/src/common_cells/src/unread.sv")
   addResource("/vsrc/ariane/src/fpga-support/rtl/SyncSpRamBeNx64.sv")
   addResource("/vsrc/ariane/src/util/sram.sv")
   addResource("/vsrc/ariane/src/util/axi_master_connect.sv")
+  addResource("/vsrc/ariane/src/common_cells/src/exp_backoff.sv")
   addResource("/vsrc/ariane/src/common_cells/src/stream_demux.sv")
   addResource("/vsrc/ariane/src/common_cells/src/stream_mux.sv")
 
@@ -172,9 +177,14 @@ class ArianeCoreBlackbox(
   addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_res_tbl.sv")
 
   addResource("/vsrc/ariane/src/cache_subsystem/tag_cmp.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/std_nbdcache.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/std_icache.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/std_cache_subsystem.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_axi_adapter.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_cache_subsystem.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_ctrl.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_mem.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_missunit.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_wbuffer.sv")
+  addResource("/vsrc/ariane/src/cache_subsystem/wt_icache.sv")
   addResource("/vsrc/ariane/src/cache_subsystem/miss_handler.sv")
   addResource("/vsrc/ariane/src/cache_subsystem/cache_ctrl.sv")
   addResource("/vsrc/ariane/src/cache_subsystem/amo_alu.sv")
@@ -231,6 +241,7 @@ class ArianeCoreBlackbox(
   addResource("/vsrc/ariane/src/compressed_decoder.sv")
   addResource("/vsrc/ariane/src/commit_stage.sv")
   addResource("/vsrc/ariane/src/branch_unit.sv")
+  addResource("/vsrc/ariane/src/axi_shim.sv")
   addResource("/vsrc/ariane/src/axi_adapter.sv")
   addResource("/vsrc/ariane/src/ariane.sv")
   addResource("/vsrc/ariane/src/ariane_regfile_ff.sv")
@@ -246,6 +257,7 @@ class ArianeCoreBlackbox(
   addResource("/vsrc/ariane/src/register_interface/src/reg_intf_pkg.sv")
   addResource("/vsrc/ariane/src/register_interface/src/reg_intf.sv")
   addResource("/vsrc/ariane/src/axi/src/axi_pkg.sv")
+  addResource("/vsrc/ariane/include/wt_cache_pkg.sv")
   addResource("/vsrc/ariane/include/std_cache_pkg.sv")
   addResource("/vsrc/ariane/include/ariane_pkg.sv")
   addResource("/vsrc/ariane/src/riscv-dbg/src/dm_pkg.sv")
