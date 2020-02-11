@@ -1,0 +1,3 @@
+[submodule "src/main/resources/vsrc/ariane"]
+	path = src/main/resources/vsrc/ariane
+	url = https://github.com/pulp-platform/ariane.git
