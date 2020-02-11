@@ -253,4 +253,7 @@ class ArianeCoreBlackbox(
   addResource("/vsrc/ariane/include/ariane_pkg.sv")
   addResource("/vsrc/ariane/src/riscv-dbg/src/dm_pkg.sv")
   addResource("/vsrc/ariane/include/riscv_pkg.sv")
+
+  // add headers
+  addResource("/vsrc/ariane/src/common_cells/include/common_cells/registers.svh")
 }
