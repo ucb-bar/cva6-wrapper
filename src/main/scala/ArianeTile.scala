@@ -71,15 +71,16 @@ case class ArianeCoreParams(
   val retireWidth: Int = 1 // TODO: Check
 }
 
+// TODO: BTBParams, DCacheParams, ICacheParams are incorrect in DTB... figure out defaults in Ariane and put in DTB
 case class ArianeTileParams(
   name: Option[String] = Some("ariane_tile"),
   hartId: Int = 0,
   beuAddr: Option[BigInt] = None,
   blockerCtrlAddr: Option[BigInt] = None,
-  btb: Option[BTBParams] = None,
+  btb: Option[BTBParams] = Some(BTBParams()),
   core: ArianeCoreParams = ArianeCoreParams(),
-  dcache: Option[DCacheParams] = None,
-  icache: Option[ICacheParams] = None,
+  dcache: Option[DCacheParams] = Some(DCacheParams()),
+  icache: Option[ICacheParams] = Some(ICacheParams()),
   boundaryBuffers: Boolean = false
   ) extends TileParams
 
@@ -114,7 +115,8 @@ class ArianeTile(
       val Description(name, mapping) = super.describe(resources)
       Description(name, mapping ++
                         cpuProperties ++
-                        nextLevelCacheProperty)
+                        nextLevelCacheProperty ++
+                        tileProperties)
     }
   }
 
@@ -132,8 +134,34 @@ class ArianeTile(
     else TLBuffer(BufferParams.flow, BufferParams.none, BufferParams.none, BufferParams.none, BufferParams.none)
   }
 
-  // TODO: Fix
-  val fakeRocketParams = RocketTileParams()
+  val fakeRocketParams = RocketTileParams(
+    dcache = arianeParams.dcache,
+    hartId = arianeParams.hartId,
+    name   = arianeParams.name,
+    btb    = arianeParams.btb,
+    core = RocketCoreParams(
+      bootFreqHz          = arianeParams.core.bootFreqHz,
+      useVM               = arianeParams.core.useVM,
+      useUser             = arianeParams.core.useUser,
+      useDebug            = arianeParams.core.useDebug,
+      useAtomics          = arianeParams.core.useAtomics,
+      useAtomicsOnlyForIO = arianeParams.core.useAtomicsOnlyForIO,
+      useCompressed       = arianeParams.core.useCompressed,
+      useSCIE             = arianeParams.core.useSCIE,
+      mulDiv              = arianeParams.core.mulDiv,
+      fpu                 = arianeParams.core.fpu,
+      nLocalInterrupts    = arianeParams.core.nLocalInterrupts,
+      nPMPs               = arianeParams.core.nPMPs,
+      nBreakpoints        = arianeParams.core.nBreakpoints,
+      nPerfCounters       = arianeParams.core.nPerfCounters,
+      haveBasicCounters   = arianeParams.core.haveBasicCounters,
+      misaWritable        = arianeParams.core.misaWritable,
+      haveCFlush          = arianeParams.core.haveCFlush,
+      nL2TLBEntries       = arianeParams.core.nL2TLBEntries,
+      mtvecInit           = arianeParams.core.mtvecInit,
+      mtvecWritable       = arianeParams.core.mtvecWritable
+    )
+  )
   val rocketLogicalTree: RocketLogicalTreeNode = new RocketLogicalTreeNode(cpuDevice, fakeRocketParams, None, p(XLen))
 
   override lazy val module = new ArianeTileModuleImp(this)
