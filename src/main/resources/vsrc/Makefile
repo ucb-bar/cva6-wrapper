@@ -157,11 +157,10 @@ PREPROC_VERILATOR_OPTS = \
 # - Preprocess with Verilator but keep the pragma comments for synthesis
 $(PREPROC_VERILOG): $(INSTALLED_VERILATOR) $(ALL_VSRCS)
 	cat $(ALL_VSRCS) > combined.sv
-	sed -i 's/\/\/.*pragma/always_pragma/g' combined.sv
-	$(INSTALLED_VERILATOR) --cc --exe $(PREPROC_VERILATOR_OPTS) combined.sv -Mdir $(vsrc_dir)/$(long_name).preprocess --top-module $(TOP) > $@
+	awk '{ if (/pragma translate_off/) { print "`ifdef ETHZ" } else if (/pragma translate_on/) { print "`endif" } else { print } }' > combined.nopragma.sv < combined.sv
+	$(INSTALLED_VERILATOR) --cc --exe $(PREPROC_VERILATOR_OPTS) combined.nopragma.sv -Mdir $(vsrc_dir)/$(long_name).preprocess --top-module $(TOP) > $@
 	sed -i '/^`line/d' $@
-	sed -i 's/always_pragma/\/\/ pragma/g' $@
-	rm -rf combined.sv $(vsrc_dir)/$(long_name).preprocess
+	rm -rf combined.nopragma.sv combined.sv $(vsrc_dir)/$(long_name).preprocess
 
 clean:
 	rm -rf $(PREPROC_VERILOG)
