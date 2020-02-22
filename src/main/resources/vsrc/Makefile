@@ -12,11 +12,6 @@ PREPROC_VERILOG = ArianeCoreBlackbox.preprocessed.sv
 default: $(PREPROC_VERILOG)
 
 #########################################################################################
-# import other necessary rules and variables
-#########################################################################################
-include $(base_dir)/verilator.mk
-
-#########################################################################################
 # includes and vsrcs
 #########################################################################################
 ARIANE_PKGS = \
@@ -154,11 +149,11 @@ PREPROC_VERILATOR_OPTS = \
 	$(EXTRA_PREPROC_OPTS)
 
 # THIS IS ARIANE SPECIFIC
-# - Preprocess with Verilator but keep the pragma comments for synthesis
-$(PREPROC_VERILOG): $(INSTALLED_VERILATOR) $(ALL_VSRCS)
+# - Preprocess with Verilator but convert the pragmas into ifdefs
+$(PREPROC_VERILOG): $(ALL_VSRCS)
 	cat $(ALL_VSRCS) > combined.sv
 	awk '{ if (/pragma translate_off/) { print "`ifdef ETHZ" } else if (/pragma translate_on/) { print "`endif" } else { print } }' > combined.nopragma.sv < combined.sv
-	$(INSTALLED_VERILATOR) --cc --exe $(PREPROC_VERILATOR_OPTS) combined.nopragma.sv -Mdir $(vsrc_dir)/$(long_name).preprocess --top-module $(TOP) > $@
+	verilator --cc --exe $(PREPROC_VERILATOR_OPTS) combined.nopragma.sv -Mdir $(vsrc_dir)/$(long_name).preprocess --top-module $(TOP) > $@
 	sed -i '/^`line/d' $@
 	rm -rf combined.nopragma.sv combined.sv $(vsrc_dir)/$(long_name).preprocess
 
