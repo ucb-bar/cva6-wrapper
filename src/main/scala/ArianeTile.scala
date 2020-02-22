@@ -68,7 +68,7 @@ case class ArianeCoreParams(
   val lrscCycles: Int = 80 // copied from Rocket
   val decodeWidth: Int = 1 // TODO: Check
   val fetchWidth: Int = 1 // TODO: Check
-  val retireWidth: Int = 1 // TODO: Check
+  val retireWidth: Int = 2 // TODO: Check
 }
 
 // TODO: BTBParams, DCacheParams, ICacheParams are incorrect in DTB... figure out defaults in Ariane and put in DTB
@@ -81,7 +81,8 @@ case class ArianeTileParams(
   core: ArianeCoreParams = ArianeCoreParams(),
   dcache: Option[DCacheParams] = Some(DCacheParams()),
   icache: Option[ICacheParams] = Some(ICacheParams()),
-  boundaryBuffers: Boolean = false
+  boundaryBuffers: Boolean = false,
+  trace: Boolean = false
   ) extends TileParams
 
 class ArianeTile(
@@ -253,6 +254,10 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
   core.io.boot_addr_i := constants.reset_vector
   core.io.hart_id_i := constants.hartid
 
+  // TODO: Enable later
+  //if (outer.arianeParams.trace) {
+  //  outer.traceSourceNode.bundle <> core.io.trace
+  //}
   outer.connectArianeInterrupts(core.io.debug_req_i, core.io.ipi_i, core.io.time_irq_i, core.io.irq_i)
 
   // connect the axi interface

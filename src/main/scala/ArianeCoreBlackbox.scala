@@ -11,6 +11,8 @@
 
 package ariane
 
+import sys.process._
+
 import chisel3._
 import chisel3.util._
 import chisel3.experimental.{IntParam, StringParam}
@@ -142,118 +144,13 @@ class ArianeCoreBlackbox(
     val axi_resp_i_r_bits_user = Input(UInt(axiUserWidth.W))
   })
 
-  require((exeRegCnt <= 5) && (exeRegBase.length <= 5) && (exeRegSz.length <= 5), "Only supports 5 execution regions")
-  require((cacheRegCnt <= 5) && (cacheRegBase.length <= 5) && (cacheRegSz.length <= 5), "Only supports 5 cacheable regions")
+  require((exeRegCnt <= 5) && (exeRegBase.length <= 5) && (exeRegSz.length <= 5), "Currently only supports 5 execution regions")
+  require((cacheRegCnt <= 5) && (cacheRegBase.length <= 5) && (cacheRegSz.length <= 5), "Currently only supports 5 cacheable regions")
 
-  // note: order matters for files below
+  // pre-process the verilog to remove "includes" and combine into one file
+  val proc = "make -C generators/ariane/src/main/resources/vsrc"
+  require (proc.! == 0, "Failed to run preprocessing step")
 
-  // add defines
-  addResource("/vsrc/ArianeCoreExternalDefines.sv")
-
-  // add packages
-  addResource("/vsrc/ariane/include/riscv_pkg.sv")
-  addResource("/vsrc/ariane/src/riscv-dbg/src/dm_pkg.sv")
-  addResource("/vsrc/ariane/include/ariane_pkg.sv")
-  addResource("/vsrc/ariane/include/std_cache_pkg.sv")
-  addResource("/vsrc/ariane/include/wt_cache_pkg.sv")
-  addResource("/vsrc/ariane/src/axi/src/axi_pkg.sv")
-  addResource("/vsrc/ariane/src/register_interface/src/reg_intf.sv")
-  addResource("/vsrc/ariane/src/register_interface/src/reg_intf_pkg.sv")
-  addResource("/vsrc/ariane/include/axi_intf.sv")
-  addResource("/vsrc/ariane/tb/ariane_soc_pkg.sv")
-  addResource("/vsrc/ariane/include/ariane_axi_pkg.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_pkg.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv")
-
-  // add srcs
-  addResource("/vsrc/ariane/src/alu.sv")
-  addResource("/vsrc/ariane/src/amo_buffer.sv")
-  addResource("/vsrc/ariane/src/ariane_regfile_ff.sv")
-  addResource("/vsrc/ariane/src/ariane.sv")
-  addResource("/vsrc/ariane/src/axi_shim.sv")
-  addResource("/vsrc/ariane/src/branch_unit.sv")
-  addResource("/vsrc/ariane/src/commit_stage.sv")
-  addResource("/vsrc/ariane/src/compressed_decoder.sv")
-  addResource("/vsrc/ariane/src/controller.sv")
-  addResource("/vsrc/ariane/src/csr_buffer.sv")
-  addResource("/vsrc/ariane/src/csr_regfile.sv")
-  addResource("/vsrc/ariane/src/decoder.sv")
-  addResource("/vsrc/ariane/src/ex_stage.sv")
-  addResource("/vsrc/ariane/src/fpu_wrap.sv")
-  addResource("/vsrc/ariane/src/id_stage.sv")
-  addResource("/vsrc/ariane/src/instr_realign.sv")
-  addResource("/vsrc/ariane/src/issue_read_operands.sv")
-  addResource("/vsrc/ariane/src/issue_stage.sv")
-  addResource("/vsrc/ariane/src/load_store_unit.sv")
-  addResource("/vsrc/ariane/src/load_unit.sv")
-  addResource("/vsrc/ariane/src/mmu.sv")
-  addResource("/vsrc/ariane/src/multiplier.sv")
-  addResource("/vsrc/ariane/src/mult.sv")
-  addResource("/vsrc/ariane/src/perf_counters.sv")
-  addResource("/vsrc/ariane/src/ptw.sv")
-  addResource("/vsrc/ariane/src/re_name.sv")
-  addResource("/vsrc/ariane/src/scoreboard.sv")
-  addResource("/vsrc/ariane/src/serdiv.sv")
-  addResource("/vsrc/ariane/src/store_buffer.sv")
-  addResource("/vsrc/ariane/src/store_unit.sv")
-  addResource("/vsrc/ariane/src/tlb.sv")
-
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_cast_multi.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_classifier.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_divsqrt_multi.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_fma_multi.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_fma.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_noncomp.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_opgroup_block.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_opgroup_fmt_slice.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_opgroup_multifmt_slice.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_rounding.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpnew_top.sv")
-
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv")
-  addResource("/vsrc/ariane/src/fpu/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv")
-
-  addResource("/vsrc/ariane/src/frontend/bht.sv")
-  addResource("/vsrc/ariane/src/frontend/btb.sv")
-  addResource("/vsrc/ariane/src/frontend/frontend.sv")
-  addResource("/vsrc/ariane/src/frontend/instr_queue.sv")
-  addResource("/vsrc/ariane/src/frontend/instr_scan.sv")
-  addResource("/vsrc/ariane/src/frontend/ras.sv")
-
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_icache.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_wbuffer.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_missunit.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_mem.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_dcache_ctrl.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_cache_subsystem.sv")
-  addResource("/vsrc/ariane/src/cache_subsystem/wt_axi_adapter.sv")
-
-  addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_res_tbl.sv")
-  addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv")
-  addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_riscv_amos.sv")
-  addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_riscv_atomics.sv")
-  addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_riscv_atomics_wrap.sv")
-  addResource("/vsrc/ariane/src/axi_riscv_atomics/src/axi_riscv_lrsc.sv")
-
-  addResource("/vsrc/ariane/src/common_cells/src/exp_backoff.sv")
-  addResource("/vsrc/ariane/src/util/axi_master_connect.sv")
-  addResource("/vsrc/ariane/src/util/sram.sv")
-  addResource("/vsrc/ariane/src/fpga-support/rtl/SyncSpRamBeNx64.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/unread.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/stream_arbiter.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/stream_arbiter_flushable.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/fifo_v3.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/lzc.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/popcount.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/rr_arb_tree.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/lfsr_8bit.sv")
-  addResource("/vsrc/ariane/src/common_cells/src/shift_reg.sv")
-
-  // add wrapper/blackbox
-  addResource("/vsrc/ArianeCoreBlackbox.sv")
+  // add wrapper/blackbox after it is pre-processed
+  addResource("/vsrc/ArianeCoreBlackbox.preprocessed.sv")
 }
