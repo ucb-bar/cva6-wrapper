@@ -60,7 +60,7 @@ class ArianeCoreBlackbox(
       "BTB_ENTRIES" -> IntParam(btbEntries),
       "BHT_ENTRIES" -> IntParam(bhtEntries),
       "EXEC_REG_CNT" -> IntParam(exeRegCnt),
-      "CACH_REG_CNT" -> IntParam(cacheRegCnt),
+      "CACHE_REG_CNT" -> IntParam(cacheRegCnt),
       "DEBUG_BASE" -> IntParam(debugBase),
       "AXI_ADDRESS_WIDTH" -> IntParam(axiAddrWidth),
       "AXI_DATA_WIDTH" -> IntParam(axiDataWidth),
