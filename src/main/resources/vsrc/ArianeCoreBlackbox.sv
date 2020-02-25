@@ -127,23 +127,41 @@ module ArianeCoreBlackbox
     // connect ariane
     ariane_axi::req_t  ariane_axi_req;
     ariane_axi::resp_t ariane_axi_resp;
-    traced_instr_pkg::trace_port_t tp_if;
 
-    ariane #(
-        .ArianeCfg ( ArianeSocCfg )
-    ) i_ariane (
-        .clk_i,
-        .rst_ni,
-        .boot_addr_i,
-        .hart_id_i,
-        .irq_i,
-        .ipi_i,
-        .time_irq_i,
-        .debug_req_i,
-        .trace_o ( tp_if ),
-        .axi_req_o ( ariane_axi_req ),
-        .axi_resp_i ( ariane_axi_resp )
-    );
+    `ifdef FIRESIM_TRACE
+        traced_instr_pkg::trace_port_t tp_if;
+
+        ariane #(
+            .ArianeCfg ( ArianeSocCfg )
+        ) i_ariane (
+            .clk_i,
+            .rst_ni,
+            .boot_addr_i,
+            .hart_id_i,
+            .irq_i,
+            .ipi_i,
+            .time_irq_i,
+            .debug_req_i,
+            .trace_o ( tp_if ),
+            .axi_req_o ( ariane_axi_req ),
+            .axi_resp_i ( ariane_axi_resp )
+        );
+    `else
+        ariane #(
+            .ArianeCfg ( ArianeSocCfg )
+        ) i_ariane (
+            .clk_i,
+            .rst_ni,
+            .boot_addr_i,
+            .hart_id_i,
+            .irq_i,
+            .ipi_i,
+            .time_irq_i,
+            .debug_req_i,
+            .axi_req_o ( ariane_axi_req ),
+            .axi_resp_i ( ariane_axi_resp )
+        );
+    `endif
 
     `ifdef FIRESIM_TRACE
         // roll all trace signals into a single bit array (and pack according to rocket-chip)
