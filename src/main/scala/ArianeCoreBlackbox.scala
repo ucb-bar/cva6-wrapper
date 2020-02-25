@@ -33,13 +33,17 @@ import freechips.rocketchip.tile._
 import freechips.rocketchip.amba.axi4._
 
 class ArianeCoreBlackbox(
+  traceportEnabled: Boolean,
+  traceportSz: Int,
   xLen: Int,
   rasEntries: Int,
   btbEntries: Int,
   bhtEntries: Int,
+  execRegAvail: Int = 5,
   exeRegCnt: Int,
   exeRegBase: Seq[BigInt],
   exeRegSz: Seq[BigInt],
+  cacheRegAvail: Int = 5,
   cacheRegCnt: Int,
   cacheRegBase: Seq[BigInt],
   cacheRegSz: Seq[BigInt],
@@ -48,39 +52,25 @@ class ArianeCoreBlackbox(
   axiDataWidth: Int,
   axiUserWidth: Int,
   axiIdWidth: Int)
-  extends BlackBox(Map(
-    "XLEN" -> IntParam(xLen),
-    "RAS_ENTRIES" -> IntParam(rasEntries),
-    "BTB_ENTRIES" -> IntParam(btbEntries),
-    "BHT_ENTRIES" -> IntParam(bhtEntries),
-    "EXEC_RG_CNT" -> IntParam(exeRegCnt),
-    "EXEC_RG_BASE_0" -> IntParam(exeRegBase(0)),
-    "EXEC_RG_SZ_0" -> IntParam(exeRegSz(0)),
-    "EXEC_RG_BASE_1" -> IntParam(exeRegBase(1)),
-    "EXEC_RG_SZ_1" -> IntParam(exeRegSz(1)),
-    "EXEC_RG_BASE_2" -> IntParam(exeRegBase(2)),
-    "EXEC_RG_SZ_2" -> IntParam(exeRegSz(2)),
-    "EXEC_RG_BASE_3" -> IntParam(exeRegBase(3)),
-    "EXEC_RG_SZ_3" -> IntParam(exeRegSz(3)),
-    "EXEC_RG_BASE_4" -> IntParam(exeRegBase(4)),
-    "EXEC_RG_SZ_4" -> IntParam(exeRegSz(4)),
-    "CACH_RG_CNT" -> IntParam(cacheRegCnt),
-    "CACH_RG_BASE_0" -> IntParam(cacheRegBase(0)),
-    "CACH_RG_SZ_0" -> IntParam(cacheRegSz(0)),
-    "CACH_RG_BASE_1" -> IntParam(cacheRegBase(1)),
-    "CACH_RG_SZ_1" -> IntParam(cacheRegSz(1)),
-    "CACH_RG_BASE_2" -> IntParam(cacheRegBase(2)),
-    "CACH_RG_SZ_2" -> IntParam(cacheRegSz(2)),
-    "CACH_RG_BASE_3" -> IntParam(cacheRegBase(3)),
-    "CACH_RG_SZ_3" -> IntParam(cacheRegSz(3)),
-    "CACH_RG_BASE_4" -> IntParam(cacheRegBase(4)),
-    "CACH_RG_SZ_4" -> IntParam(cacheRegSz(4)),
-    "DEBUG_BASE" -> IntParam(debugBase),
-    "AXI_ADDRESS_WIDTH" -> IntParam(axiAddrWidth),
-    "AXI_DATA_WIDTH" -> IntParam(axiDataWidth),
-    "AXI_USER_WIDTH" -> IntParam(axiUserWidth),
-    "AXI_ID_WIDTH" -> IntParam(axiIdWidth)
-  ))
+  extends BlackBox(
+    Map(
+      "TRACEPORT_SZ" -> IntParam(traceportSz),
+      "XLEN" -> IntParam(xLen),
+      "RAS_ENTRIES" -> IntParam(rasEntries),
+      "BTB_ENTRIES" -> IntParam(btbEntries),
+      "BHT_ENTRIES" -> IntParam(bhtEntries),
+      "EXEC_REG_CNT" -> IntParam(exeRegCnt),
+      "CACH_REG_CNT" -> IntParam(cacheRegCnt),
+      "DEBUG_BASE" -> IntParam(debugBase),
+      "AXI_ADDRESS_WIDTH" -> IntParam(axiAddrWidth),
+      "AXI_DATA_WIDTH" -> IntParam(axiDataWidth),
+      "AXI_USER_WIDTH" -> IntParam(axiUserWidth),
+      "AXI_ID_WIDTH" -> IntParam(axiIdWidth)) ++
+    (0 until execRegAvail).map(i => s"EXEC_REG_BASE_$i" -> IntParam(exeRegBase(i))).toMap ++
+    (0 until execRegAvail).map(i => s"EXEC_REG_SZ_$i" -> IntParam(exeRegSz(i))).toMap ++
+    (0 until cacheRegAvail).map(i => s"CACHE_REG_BASE_$i" -> IntParam(cacheRegBase(i))).toMap ++
+    (0 until cacheRegAvail).map(i => s"CACHE_REG_SZ_$i" -> IntParam(cacheRegSz(i))).toMap
+  )
   with HasBlackBoxResource
 {
   val io = IO(new Bundle {
@@ -92,6 +82,7 @@ class ArianeCoreBlackbox(
     val ipi_i = Input(Bool())
     val time_irq_i = Input(Bool())
     val debug_req_i = Input(Bool())
+    val trace_o = Output(UInt(traceportSz.W))
 
     val axi_resp_i_aw_ready      = Input(Bool())
     val axi_req_o_aw_valid       = Output(Bool())
@@ -144,11 +135,12 @@ class ArianeCoreBlackbox(
     val axi_resp_i_r_bits_user = Input(UInt(axiUserWidth.W))
   })
 
-  require((exeRegCnt <= 5) && (exeRegBase.length <= 5) && (exeRegSz.length <= 5), "Currently only supports 5 execution regions")
-  require((cacheRegCnt <= 5) && (cacheRegBase.length <= 5) && (cacheRegSz.length <= 5), "Currently only supports 5 cacheable regions")
+  require((exeRegCnt <= execRegAvail) && (exeRegBase.length <= execRegAvail) && (exeRegSz.length <= execRegAvail), s"Currently only supports $execRegAvail execution regions")
+  require((cacheRegCnt <= cacheRegAvail) && (cacheRegBase.length <= cacheRegAvail) && (cacheRegSz.length <= cacheRegAvail), s"Currently only supports $cacheRegAvail cacheable regions")
 
   // pre-process the verilog to remove "includes" and combine into one file
-  val proc = "make -C generators/ariane/src/main/resources/vsrc"
+  val make = "make -C generators/ariane/src/main/resources/vsrc default "
+  val proc = if (traceportEnabled) make + "EXTRA_PREPROC_OPTS=+define+FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
   // add wrapper/blackbox after it is pre-processed

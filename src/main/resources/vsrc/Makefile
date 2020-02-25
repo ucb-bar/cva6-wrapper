@@ -8,7 +8,7 @@ ariane_dir=$(vsrc_dir)/ariane
 # name of output pre-processed verilog file
 PREPROC_VERILOG = ArianeCoreBlackbox.preprocessed.sv
 
-.PHONY: default
+.PHONY: default $(PREPROC_VERILOG)
 default: $(PREPROC_VERILOG)
 
 #########################################################################################
@@ -27,7 +27,8 @@ ARIANE_PKGS = \
 	$(ariane_dir)/tb/ariane_soc_pkg.sv \
 	$(ariane_dir)/include/ariane_axi_pkg.sv \
 	$(ariane_dir)/src/fpu/src/fpnew_pkg.sv \
-	$(ariane_dir)/src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+	$(ariane_dir)/src/fpu/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv \
+	$(ariane_dir)/include/traced_instr_pkg.sv
 
 ARIANE_VSRCS = \
 	$(ariane_dir)/src/alu.sv \

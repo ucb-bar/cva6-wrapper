@@ -6,32 +6,33 @@
 
 module ArianeCoreBlackbox
     #(
+        parameter TRACEPORT_SZ = 0,
         parameter XLEN = 0,
         parameter RAS_ENTRIES = 0,
         parameter BTB_ENTRIES = 0,
         parameter BHT_ENTRIES = 0,
-        parameter [63:0] EXEC_RG_CNT = 0,
-        parameter [63:0] EXEC_RG_BASE_0 = 0,
-        parameter [63:0] EXEC_RG_SZ_0 = 0,
-        parameter [63:0] EXEC_RG_BASE_1 = 0,
-        parameter [63:0] EXEC_RG_SZ_1 = 0,
-        parameter [63:0] EXEC_RG_BASE_2 = 0,
-        parameter [63:0] EXEC_RG_SZ_2 = 0,
-        parameter [63:0] EXEC_RG_BASE_3 = 0,
-        parameter [63:0] EXEC_RG_SZ_3 = 0,
-        parameter [63:0] EXEC_RG_BASE_4 = 0,
-        parameter [63:0] EXEC_RG_SZ_4 = 0,
-        parameter [63:0] CACH_RG_CNT = 0,
-        parameter [63:0] CACH_RG_BASE_0 = 0,
-        parameter [63:0] CACH_RG_SZ_0 = 0,
-        parameter [63:0] CACH_RG_BASE_1 = 0,
-        parameter [63:0] CACH_RG_SZ_1 = 0,
-        parameter [63:0] CACH_RG_BASE_2 = 0,
-        parameter [63:0] CACH_RG_SZ_2 = 0,
-        parameter [63:0] CACH_RG_BASE_3 = 0,
-        parameter [63:0] CACH_RG_SZ_3 = 0,
-        parameter [63:0] CACH_RG_BASE_4 = 0,
-        parameter [63:0] CACH_RG_SZ_4 = 0,
+        parameter [63:0] EXEC_REG_CNT = 0,
+        parameter [63:0] EXEC_REG_BASE_0 = 0,
+        parameter [63:0] EXEC_REG_SZ_0 = 0,
+        parameter [63:0] EXEC_REG_BASE_1 = 0,
+        parameter [63:0] EXEC_REG_SZ_1 = 0,
+        parameter [63:0] EXEC_REG_BASE_2 = 0,
+        parameter [63:0] EXEC_REG_SZ_2 = 0,
+        parameter [63:0] EXEC_REG_BASE_3 = 0,
+        parameter [63:0] EXEC_REG_SZ_3 = 0,
+        parameter [63:0] EXEC_REG_BASE_4 = 0,
+        parameter [63:0] EXEC_REG_SZ_4 = 0,
+        parameter [63:0] CACHE_REG_CNT = 0,
+        parameter [63:0] CACHE_REG_BASE_0 = 0,
+        parameter [63:0] CACHE_REG_SZ_0 = 0,
+        parameter [63:0] CACHE_REG_BASE_1 = 0,
+        parameter [63:0] CACHE_REG_SZ_1 = 0,
+        parameter [63:0] CACHE_REG_BASE_2 = 0,
+        parameter [63:0] CACHE_REG_SZ_2 = 0,
+        parameter [63:0] CACHE_REG_BASE_3 = 0,
+        parameter [63:0] CACHE_REG_SZ_3 = 0,
+        parameter [63:0] CACHE_REG_BASE_4 = 0,
+        parameter [63:0] CACHE_REG_SZ_4 = 0,
         parameter [63:0] DEBUG_BASE = 0,
         parameter AXI_ADDRESS_WIDTH = 0,
         parameter AXI_DATA_WIDTH = 0,
@@ -47,6 +48,7 @@ module ArianeCoreBlackbox
     input ipi_i,
     input time_irq_i,
     input debug_req_i,
+    output [TRACEPORT_SZ-1:0] trace_o,
 
     input  axi_resp_i_aw_ready,
     output axi_req_o_aw_valid,
@@ -99,10 +101,6 @@ module ArianeCoreBlackbox
     input [AXI_USER_WIDTH-1:0] axi_resp_i_r_bits_user
 );
 
-    // connect ariane
-    ariane_axi::req_t  ariane_axi_req;
-    ariane_axi::resp_t ariane_axi_resp;
-
     localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
         RASDepth: RAS_ENTRIES,
         BTBEntries: BTB_ENTRIES,
@@ -112,19 +110,24 @@ module ArianeCoreBlackbox
         NonIdempotentAddrBase: {64'b0},
         NonIdempotentLength:   {64'b0},
         // execute region
-        NrExecuteRegionRules:  EXEC_RG_CNT,
-        ExecuteRegionAddrBase: {EXEC_RG_BASE_4, EXEC_RG_BASE_3, EXEC_RG_BASE_2, EXEC_RG_BASE_1, EXEC_RG_BASE_0},
-        ExecuteRegionLength:   {  EXEC_RG_SZ_4,   EXEC_RG_SZ_3,   EXEC_RG_SZ_2,   EXEC_RG_SZ_1,   EXEC_RG_SZ_0},
+        NrExecuteRegionRules:  EXEC_REG_CNT,
+        ExecuteRegionAddrBase: {EXEC_REG_BASE_4, EXEC_REG_BASE_3, EXEC_REG_BASE_2, EXEC_REG_BASE_1, EXEC_REG_BASE_0},
+        ExecuteRegionLength:   {  EXEC_REG_SZ_4,   EXEC_REG_SZ_3,   EXEC_REG_SZ_2,   EXEC_REG_SZ_1,   EXEC_REG_SZ_0},
         // cached region
-        NrCachedRegionRules:   CACH_RG_CNT,
-        CachedRegionAddrBase:  {CACH_RG_BASE_4, CACH_RG_BASE_3, CACH_RG_BASE_2, CACH_RG_BASE_1, CACH_RG_BASE_0},
-        CachedRegionLength:    {  CACH_RG_SZ_4,   CACH_RG_SZ_3,   CACH_RG_SZ_2,   CACH_RG_SZ_1,   CACH_RG_SZ_0},
+        NrCachedRegionRules:   CACHE_REG_CNT,
+        CachedRegionAddrBase:  {CACHE_REG_BASE_4, CACHE_REG_BASE_3, CACHE_REG_BASE_2, CACHE_REG_BASE_1, CACHE_REG_BASE_0},
+        CachedRegionLength:    {  CACHE_REG_SZ_4,   CACHE_REG_SZ_3,   CACHE_REG_SZ_2,   CACHE_REG_SZ_1,   CACHE_REG_SZ_0},
         //  cache config
         Axi64BitCompliant:      1'b1,
         SwapEndianess:          1'b0,
         // debug
         DmBaseAddress:          DEBUG_BASE
     };
+
+    // connect ariane
+    ariane_axi::req_t  ariane_axi_req;
+    ariane_axi::resp_t ariane_axi_resp;
+    traced_instr_pkg::trace_port_t tp_if;
 
     ariane #(
         .ArianeCfg ( ArianeSocCfg )
@@ -137,9 +140,31 @@ module ArianeCoreBlackbox
         .ipi_i,
         .time_irq_i,
         .debug_req_i,
+        .trace_o ( tp_if ),
         .axi_req_o ( ariane_axi_req ),
         .axi_resp_i ( ariane_axi_resp )
     );
+
+    `ifdef FIRESIM_TRACE
+        // roll all trace signals into a single bit array (and pack according to rocket-chip)
+        for (genvar i = 0; i < ariane_pkg::NR_COMMIT_PORTS; ++i) begin : gen_tp_roll
+            assign trace_o[(TRACEPORT_SZ*(i+1)/ariane_pkg::NR_COMMIT_PORTS)-1:(TRACEPORT_SZ*i/ariane_pkg::NR_COMMIT_PORTS)] = {
+                tp_if[i].tval[39:0],
+                tp_if[i].cause[7:0],
+                tp_if[i].interrupt,
+                tp_if[i].exception,
+                { 1'b0, tp_if[i].priv[1:0] },
+                tp_if[i].insn[31:0],
+                tp_if[i].iaddr[39:0],
+                tp_if[i].valid,
+                ~tp_if[i].reset,
+                tp_if[i].clock
+            };
+        end
+    `else
+        // set all the trace signals to 0
+        assign trace_o = '0;
+    `endif
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH(AXI_ADDRESS_WIDTH),

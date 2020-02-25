@@ -18,6 +18,13 @@ import freechips.rocketchip.tile._
 case object ArianeCrossingKey extends Field[Seq[RocketCrossingParams]](List(RocketCrossingParams()))
 
 /**
+ * Enable trace port
+ */
+class WithArianeEnableTrace extends Config((site, here, up) => {
+  case ArianeTilesKey => up(ArianeTilesKey) map (tile => tile.copy(trace = true))
+})
+
+/**
  * Makes cacheable region include to/from host addresses.
  * Speeds up operation... at the expense of not being able to use
  * to/fromhost communication unless those lines are evicted from L1.

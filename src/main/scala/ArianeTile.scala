@@ -37,7 +37,7 @@ case class ArianeCoreParams(
   rasEntries: Int = 4,
   btbEntries: Int = 16,
   bhtEntries: Int = 16,
-  enableToFromHostCaching: Boolean = false
+  enableToFromHostCaching: Boolean = false,
 ) extends CoreParams {
   /* DO NOT CHANGE BELOW THIS */
   val useVM: Boolean = true
@@ -68,7 +68,7 @@ case class ArianeCoreParams(
   val lrscCycles: Int = 80 // copied from Rocket
   val decodeWidth: Int = 1 // TODO: Check
   val fetchWidth: Int = 1 // TODO: Check
-  val retireWidth: Int = 2 // TODO: Check
+  val retireWidth: Int = 2
 }
 
 // TODO: BTBParams, DCacheParams, ICacheParams are incorrect in DTB... figure out defaults in Ariane and put in DTB
@@ -230,8 +230,15 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
   }
   val cacheableRegionCnt   = cacheableRegionBases.length
 
+  val traceInstSz = (new freechips.rocketchip.rocket.TracedInstruction).getWidth
+
   // connect the ariane core
   val core = Module(new ArianeCoreBlackbox(
+    // traceport params
+    traceportEnabled = outer.arianeParams.trace,
+    traceportSz = (outer.arianeParams.core.retireWidth * traceInstSz),
+
+    // general core params
     xLen = p(XLen),
     rasEntries = outer.arianeParams.core.rasEntries,
     btbEntries = outer.arianeParams.core.btbEntries,
@@ -254,11 +261,28 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
   core.io.boot_addr_i := constants.reset_vector
   core.io.hart_id_i := constants.hartid
 
-  // TODO: Enable later
-  //if (outer.arianeParams.trace) {
-  //  outer.traceSourceNode.bundle <> core.io.trace
-  //}
   outer.connectArianeInterrupts(core.io.debug_req_i, core.io.ipi_i, core.io.time_irq_i, core.io.irq_i)
+
+  if (outer.arianeParams.trace) {
+    // unpack the trace io from a UInt into Vec(TracedInstructions)
+    //outer.traceSourceNode.bundle <> core.io.trace_o.asTypeOf(outer.traceSourceNode.bundle)
+
+    for (w <- 0 until outer.arianeParams.core.retireWidth) {
+      outer.traceSourceNode.bundle(w).clock     := core.io.trace_o(traceInstSz*w + 0).asClock
+      outer.traceSourceNode.bundle(w).reset     := core.io.trace_o(traceInstSz*w + 1)
+      outer.traceSourceNode.bundle(w).valid     := core.io.trace_o(traceInstSz*w + 2)
+      outer.traceSourceNode.bundle(w).iaddr     := core.io.trace_o(traceInstSz*w + 42, traceInstSz*w + 3)
+      outer.traceSourceNode.bundle(w).insn      := core.io.trace_o(traceInstSz*w + 74, traceInstSz*w + 43)
+      outer.traceSourceNode.bundle(w).priv      := core.io.trace_o(traceInstSz*w + 77, traceInstSz*w + 75)
+      outer.traceSourceNode.bundle(w).exception := core.io.trace_o(traceInstSz*w + 78)
+      outer.traceSourceNode.bundle(w).interrupt := core.io.trace_o(traceInstSz*w + 79)
+      outer.traceSourceNode.bundle(w).cause     := core.io.trace_o(traceInstSz*w + 87, traceInstSz*w + 80)
+      outer.traceSourceNode.bundle(w).tval      := core.io.trace_o(traceInstSz*w + 127, traceInstSz*w + 88)
+    }
+  } else {
+    outer.traceSourceNode.bundle := DontCare
+    outer.traceSourceNode.bundle map (t => t.valid := false.B)
+  }
 
   // connect the axi interface
   outer.memAXI4Node.out foreach { case (out, edgeOut) =>
