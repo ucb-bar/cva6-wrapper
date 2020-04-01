@@ -21,7 +21,7 @@ import freechips.rocketchip.config._
 import freechips.rocketchip.subsystem._
 import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalModuleTree, LogicalTreeNode, RocketLogicalTreeNode, ICacheLogicalTreeNode}
+import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalTreeNode}
 import freechips.rocketchip.rocket._
 import freechips.rocketchip.subsystem.{RocketCrossingParams}
 import freechips.rocketchip.tilelink._
@@ -84,6 +84,8 @@ case class ArianeTileParams(
   boundaryBuffers: Boolean = false,
   trace: Boolean = false
   ) extends TileParams
+
+//class ArianeLogicalTree(tile: ArianeTile) extends LogicalTreeNode(() => Some(tile.cpuDevice))
 
 class ArianeTile(
   val arianeParams: ArianeTileParams,
@@ -163,7 +165,7 @@ class ArianeTile(
       mtvecWritable       = arianeParams.core.mtvecWritable
     )
   )
-  val rocketLogicalTree: RocketLogicalTreeNode = new RocketLogicalTreeNode(cpuDevice, fakeRocketParams, None, p(XLen))
+  //val arianeLogicalTree = new ArianeLogicalTree(this)
 
   override lazy val module = new ArianeTileModuleImp(this)
 
