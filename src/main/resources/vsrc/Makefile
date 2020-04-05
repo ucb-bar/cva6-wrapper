@@ -132,6 +132,7 @@ PREPROC_DEFINES ?= \
 	WT_DCACHE \
 	DISABLE_TRACER \
 	SRAM_NO_INIT \
+	VERILATOR \
 	$(EXTRA_PREPROC_DEFINES)
 
 PREPROC_SCRIPT = $(base_dir)/scripts/insert-includes.py
