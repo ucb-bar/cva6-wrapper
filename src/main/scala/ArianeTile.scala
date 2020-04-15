@@ -85,8 +85,6 @@ case class ArianeTileParams(
   trace: Boolean = false
   ) extends TileParams
 
-//class ArianeLogicalTree(tile: ArianeTile) extends LogicalTreeNode(() => Some(tile.cpuDevice))
-
 class ArianeTile(
   val arianeParams: ArianeTileParams,
   crossing: ClockCrossingType,
@@ -269,7 +267,6 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
     // unpack the trace io from a UInt into Vec(TracedInstructions)
     //outer.traceSourceNode.bundle <> core.io.trace_o.asTypeOf(outer.traceSourceNode.bundle)
 
-    // Abe...
     for (w <- 0 until outer.arianeParams.core.retireWidth) {
       outer.traceSourceNode.bundle(w).valid     := core.io.trace_o(traceInstSz*w + 0 )
       outer.traceSourceNode.bundle(w).iaddr     := core.io.trace_o(traceInstSz*w + 40, traceInstSz*w + 1)
