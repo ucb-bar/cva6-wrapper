@@ -163,7 +163,6 @@ class ArianeTile(
       mtvecWritable       = arianeParams.core.mtvecWritable
     )
   )
-  //val arianeLogicalTree = new ArianeLogicalTree(this)
 
   override lazy val module = new ArianeTileModuleImp(this)
 
