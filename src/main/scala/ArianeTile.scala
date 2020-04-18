@@ -135,35 +135,6 @@ class ArianeTile(
     else TLBuffer(BufferParams.flow, BufferParams.none, BufferParams.none, BufferParams.none, BufferParams.none)
   }
 
-  val fakeRocketParams = RocketTileParams(
-    dcache = arianeParams.dcache,
-    hartId = arianeParams.hartId,
-    name   = arianeParams.name,
-    btb    = arianeParams.btb,
-    core = RocketCoreParams(
-      bootFreqHz          = arianeParams.core.bootFreqHz,
-      useVM               = arianeParams.core.useVM,
-      useUser             = arianeParams.core.useUser,
-      useDebug            = arianeParams.core.useDebug,
-      useAtomics          = arianeParams.core.useAtomics,
-      useAtomicsOnlyForIO = arianeParams.core.useAtomicsOnlyForIO,
-      useCompressed       = arianeParams.core.useCompressed,
-      useSCIE             = arianeParams.core.useSCIE,
-      mulDiv              = arianeParams.core.mulDiv,
-      fpu                 = arianeParams.core.fpu,
-      nLocalInterrupts    = arianeParams.core.nLocalInterrupts,
-      nPMPs               = arianeParams.core.nPMPs,
-      nBreakpoints        = arianeParams.core.nBreakpoints,
-      nPerfCounters       = arianeParams.core.nPerfCounters,
-      haveBasicCounters   = arianeParams.core.haveBasicCounters,
-      misaWritable        = arianeParams.core.misaWritable,
-      haveCFlush          = arianeParams.core.haveCFlush,
-      nL2TLBEntries       = arianeParams.core.nL2TLBEntries,
-      mtvecInit           = arianeParams.core.mtvecInit,
-      mtvecWritable       = arianeParams.core.mtvecWritable
-    )
-  )
-
   override lazy val module = new ArianeTileModuleImp(this)
 
   /**
@@ -267,14 +238,14 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
     //outer.traceSourceNode.bundle <> core.io.trace_o.asTypeOf(outer.traceSourceNode.bundle)
 
     for (w <- 0 until outer.arianeParams.core.retireWidth) {
-      outer.traceSourceNode.bundle(w).valid     := core.io.trace_o(traceInstSz*w + 0 )
-      outer.traceSourceNode.bundle(w).iaddr     := core.io.trace_o(traceInstSz*w + 40, traceInstSz*w + 1)
-      outer.traceSourceNode.bundle(w).insn      := core.io.trace_o(traceInstSz*w + 72, traceInstSz*w + 41)
-      outer.traceSourceNode.bundle(w).priv      := core.io.trace_o(traceInstSz*w + 75, traceInstSz*w + 73)
-      outer.traceSourceNode.bundle(w).exception := core.io.trace_o(traceInstSz*w + 76)
-      outer.traceSourceNode.bundle(w).interrupt := core.io.trace_o(traceInstSz*w + 77)
-      outer.traceSourceNode.bundle(w).cause     := core.io.trace_o(traceInstSz*w + 85, traceInstSz*w + 78)
-      outer.traceSourceNode.bundle(w).tval      := core.io.trace_o(traceInstSz*w + 125, traceInstSz*w + 86)
+      outer.traceSourceNode.bundle(w).valid     := core.io.trace_o(traceInstSz*w + 2)
+      outer.traceSourceNode.bundle(w).iaddr     := core.io.trace_o(traceInstSz*w + 42, traceInstSz*w + 3)
+      outer.traceSourceNode.bundle(w).insn      := core.io.trace_o(traceInstSz*w + 74, traceInstSz*w + 43)
+      outer.traceSourceNode.bundle(w).priv      := core.io.trace_o(traceInstSz*w + 77, traceInstSz*w + 75)
+      outer.traceSourceNode.bundle(w).exception := core.io.trace_o(traceInstSz*w + 78)
+      outer.traceSourceNode.bundle(w).interrupt := core.io.trace_o(traceInstSz*w + 79)
+      outer.traceSourceNode.bundle(w).cause     := core.io.trace_o(traceInstSz*w + 87, traceInstSz*w + 80)
+      outer.traceSourceNode.bundle(w).tval      := core.io.trace_o(traceInstSz*w + 127, traceInstSz*w + 88)
     }
   } else {
     outer.traceSourceNode.bundle := DontCare
