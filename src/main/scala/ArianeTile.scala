@@ -21,7 +21,7 @@ import freechips.rocketchip.config._
 import freechips.rocketchip.subsystem._
 import freechips.rocketchip.devices.tilelink._
 import freechips.rocketchip.diplomacy._
-import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalModuleTree, LogicalTreeNode, RocketLogicalTreeNode, ICacheLogicalTreeNode}
+import freechips.rocketchip.diplomaticobjectmodel.logicaltree.{LogicalTreeNode}
 import freechips.rocketchip.rocket._
 import freechips.rocketchip.subsystem.{RocketCrossingParams}
 import freechips.rocketchip.tilelink._
@@ -135,36 +135,6 @@ class ArianeTile(
     else TLBuffer(BufferParams.flow, BufferParams.none, BufferParams.none, BufferParams.none, BufferParams.none)
   }
 
-  val fakeRocketParams = RocketTileParams(
-    dcache = arianeParams.dcache,
-    hartId = arianeParams.hartId,
-    name   = arianeParams.name,
-    btb    = arianeParams.btb,
-    core = RocketCoreParams(
-      bootFreqHz          = arianeParams.core.bootFreqHz,
-      useVM               = arianeParams.core.useVM,
-      useUser             = arianeParams.core.useUser,
-      useDebug            = arianeParams.core.useDebug,
-      useAtomics          = arianeParams.core.useAtomics,
-      useAtomicsOnlyForIO = arianeParams.core.useAtomicsOnlyForIO,
-      useCompressed       = arianeParams.core.useCompressed,
-      useSCIE             = arianeParams.core.useSCIE,
-      mulDiv              = arianeParams.core.mulDiv,
-      fpu                 = arianeParams.core.fpu,
-      nLocalInterrupts    = arianeParams.core.nLocalInterrupts,
-      nPMPs               = arianeParams.core.nPMPs,
-      nBreakpoints        = arianeParams.core.nBreakpoints,
-      nPerfCounters       = arianeParams.core.nPerfCounters,
-      haveBasicCounters   = arianeParams.core.haveBasicCounters,
-      misaWritable        = arianeParams.core.misaWritable,
-      haveCFlush          = arianeParams.core.haveCFlush,
-      nL2TLBEntries       = arianeParams.core.nL2TLBEntries,
-      mtvecInit           = arianeParams.core.mtvecInit,
-      mtvecWritable       = arianeParams.core.mtvecWritable
-    )
-  )
-  val rocketLogicalTree: RocketLogicalTreeNode = new RocketLogicalTreeNode(cpuDevice, fakeRocketParams, None, p(XLen))
-
   override lazy val module = new ArianeTileModuleImp(this)
 
   /**
@@ -268,8 +238,6 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
     //outer.traceSourceNode.bundle <> core.io.trace_o.asTypeOf(outer.traceSourceNode.bundle)
 
     for (w <- 0 until outer.arianeParams.core.retireWidth) {
-      outer.traceSourceNode.bundle(w).clock     := core.io.trace_o(traceInstSz*w + 0).asClock
-      outer.traceSourceNode.bundle(w).reset     := core.io.trace_o(traceInstSz*w + 1)
       outer.traceSourceNode.bundle(w).valid     := core.io.trace_o(traceInstSz*w + 2)
       outer.traceSourceNode.bundle(w).iaddr     := core.io.trace_o(traceInstSz*w + 42, traceInstSz*w + 3)
       outer.traceSourceNode.bundle(w).insn      := core.io.trace_o(traceInstSz*w + 74, traceInstSz*w + 43)
