@@ -200,7 +200,10 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
   }
   val cacheableRegionCnt   = cacheableRegionBases.length
 
-  val traceInstSz = (new freechips.rocketchip.rocket.TracedInstruction).getWidth
+  // Add 2 to account for the extra clock and reset included with each
+  // instruction in the original trace port implementation. These have since
+  // been removed from TracedInstruction.
+  val traceInstSz = (new freechips.rocketchip.rocket.TracedInstruction).getWidth + 2
 
   // connect the ariane core
   val core = Module(new ArianeCoreBlackbox(
