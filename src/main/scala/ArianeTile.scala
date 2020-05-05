@@ -42,6 +42,7 @@ case class ArianeCoreParams(
   /* DO NOT CHANGE BELOW THIS */
   val useVM: Boolean = true
   val useUser: Boolean = true
+  val useSupervisor: Boolean = false
   val useDebug: Boolean = true
   val useAtomics: Boolean = true
   val useAtomicsOnlyForIO: Boolean = false // copied from Rocket
