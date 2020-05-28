@@ -126,37 +126,26 @@ lookup_dirs = $(shell find -L $(ariane_dir) -name target -prune -o -type d -prin
 INC_DIR_NAMES ?= include inc
 INC_DIRS ?= $(foreach dir_name,$(INC_DIR_NAMES),$(call lookup_dirs,$(dir_name)))
 
-# default ariane top module
-TOP = ArianeCoreBlackbox
-
 # these flags are specific to Chipyard
-EXTRA_PREPROC_OPTS ?=
+EXTRA_PREPROC_DEFINES ?=
 PREPROC_DEFINES ?= \
-	+define+WT_DCACHE \
-	+define+DISABLE_TRACER \
-	+define+SRAM_NO_INIT
+	WT_DCACHE \
+	DISABLE_TRACER \
+	SRAM_NO_INIT \
+	VERILATOR \
+	$(EXTRA_PREPROC_DEFINES)
 
-PREPROC_VERILATOR_OPTS = \
-	-E \
-	$(foreach dir_path,$(INC_DIRS),+incdir+$(dir_path)) \
-	-Wno-STMTDLY \
-	-Werror-IMPLICIT \
-	-Wno-ASSIGNDLY \
-	-Wno-UNOPTFLAT \
-	-Wno-BLKANDNBLK \
-	-Wall \
-	$(OTHER_PREPROC_VERILATOR_OPTS) \
-	$(PREPROC_DEFINES) \
-	$(EXTRA_PREPROC_OPTS)
+PREPROC_SCRIPT = $(base_dir)/scripts/insert-includes.py
 
-# THIS IS ARIANE SPECIFIC
-# - Preprocess with Verilator but convert the pragmas into ifdefs
 $(PREPROC_VERILOG): $(ALL_VSRCS)
-	cat $(ALL_VSRCS) > combined.sv
-	awk '{ if (/pragma translate_off/) { print "`ifdef ETHZ" } else if (/pragma translate_on/) { print "`endif" } else { print } }' > combined.nopragma.sv < combined.sv
-	verilator --cc --exe $(PREPROC_VERILATOR_OPTS) combined.nopragma.sv -Mdir $(vsrc_dir)/$(long_name).preprocess --top-module $(TOP) > $@
-	sed -i '/^`line/d' $@
-	rm -rf combined.nopragma.sv combined.sv $(vsrc_dir)/$(long_name).preprocess
+	mkdir -p $(dir $(PREPROC_VERILOG))
+	$(foreach def,$(PREPROC_DEFINES),echo "\`define $(def)" >> def.v; )
+	$(foreach def,$(PREPROC_DEFINES),echo "\`undef $(def)" >> undef.v; )
+	cat def.v $(ALL_VSRCS) undef.v > combined.sv
+	sed -i '/l15.tmp.h/d' combined.sv
+	sed -i '/define.tmp.h/d' combined.sv
+	$(PREPROC_SCRIPT) combined.sv $@ $(INC_DIRS)
+	rm -rf combined.sv def.v undef.v
 
 clean:
 	rm -rf $(PREPROC_VERILOG)

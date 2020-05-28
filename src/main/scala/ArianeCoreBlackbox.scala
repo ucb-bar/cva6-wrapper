@@ -140,7 +140,7 @@ class ArianeCoreBlackbox(
 
   // pre-process the verilog to remove "includes" and combine into one file
   val make = "make -C generators/ariane/src/main/resources/vsrc default "
-  val proc = if (traceportEnabled) make + "EXTRA_PREPROC_OPTS=+define+FIRESIM_TRACE" else make
+  val proc = if (traceportEnabled) make + "EXTRA_PREPROC_DEFINES=FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
   // add wrapper/blackbox after it is pre-processed
