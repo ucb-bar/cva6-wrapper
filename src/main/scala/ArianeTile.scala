@@ -30,8 +30,6 @@ import freechips.rocketchip.util._
 import freechips.rocketchip.tile._
 import freechips.rocketchip.amba.axi4._
 
-case object ArianeTilesKey extends Field[Seq[ArianeTileParams]](Nil)
-
 case class ArianeCoreParams(
   bootFreqHz: BigInt = BigInt(1700000000),
   rasEntries: Int = 4,
@@ -72,26 +70,38 @@ case class ArianeCoreParams(
   val retireWidth: Int = 2
 }
 
+case class ArianeTileAttachParams(
+  tileParams: ArianeTileParams,
+  crossingParams: RocketCrossingParams
+) extends CanAttachTile {
+  type TileType = ArianeTile
+  val lookup = PriorityMuxHartIdFromSeq(Seq(tileParams))
+}
+
 // TODO: BTBParams, DCacheParams, ICacheParams are incorrect in DTB... figure out defaults in Ariane and put in DTB
 case class ArianeTileParams(
   name: Option[String] = Some("ariane_tile"),
   hartId: Int = 0,
-  beuAddr: Option[BigInt] = None,
-  blockerCtrlAddr: Option[BigInt] = None,
-  btb: Option[BTBParams] = Some(BTBParams()),
-  core: ArianeCoreParams = ArianeCoreParams(),
-  dcache: Option[DCacheParams] = Some(DCacheParams()),
-  icache: Option[ICacheParams] = Some(ICacheParams()),
-  boundaryBuffers: Boolean = false,
-  trace: Boolean = false
-  ) extends TileParams
+  trace: Boolean = false,
+  val core: ArianeCoreParams = ArianeCoreParams()
+) extends InstantiableTileParams[ArianeTile]
+{
+  val beuAddr: Option[BigInt] = None
+  val blockerCtrlAddr: Option[BigInt] = None
+  val btb: Option[BTBParams] = Some(BTBParams())
+  val boundaryBuffers: Boolean = false
+  val dcache: Option[DCacheParams] = Some(DCacheParams())
+  val icache: Option[ICacheParams] = Some(ICacheParams())
+  def instantiate(crossing: TileCrossingParamsLike, lookup: LookupByHartIdImpl)(implicit p: Parameters): ArianeTile = {
+    new ArianeTile(this, crossing, lookup)
+  }
+}
 
-class ArianeTile(
+class ArianeTile private(
   val arianeParams: ArianeTileParams,
   crossing: ClockCrossingType,
   lookup: LookupByHartIdImpl,
-  q: Parameters,
-  logicalTreeNode: LogicalTreeNode)
+  q: Parameters)
   extends BaseTile(arianeParams, crossing, lookup, q)
   with SinksExternalInterrupts
   with SourcesExternalNotifications
@@ -100,8 +110,8 @@ class ArianeTile(
    * Setup parameters:
    * Private constructor ensures altered LazyModule.p is used implicitly
    */
-  def this(params: ArianeTileParams, crossing: RocketCrossingParams, lookup: LookupByHartIdImpl, logicalTreeNode: LogicalTreeNode)(implicit p: Parameters) =
-    this(params, crossing.crossingType, lookup, p, logicalTreeNode)
+  def this(params: ArianeTileParams, crossing: TileCrossingParamsLike, lookup: LookupByHartIdImpl)(implicit p: Parameters) =
+    this(params, crossing.crossingType, lookup, p)
 
   val intOutwardNode = IntIdentityNode()
   val slaveNode = TLIdentityNode()
