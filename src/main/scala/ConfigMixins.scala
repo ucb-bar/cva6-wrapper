@@ -9,20 +9,11 @@ import chisel3._
 import chisel3.util.{log2Up}
 
 import freechips.rocketchip.config.{Parameters, Config, Field}
-import freechips.rocketchip.subsystem.{SystemBusKey, RocketTilesKey, RocketCrossingParams}
+import freechips.rocketchip.subsystem._
 import freechips.rocketchip.devices.tilelink.{BootROMParams}
 import freechips.rocketchip.diplomacy.{SynchronousCrossing, AsynchronousCrossing, RationalCrossing}
 import freechips.rocketchip.rocket._
 import freechips.rocketchip.tile._
-
-case object ArianeCrossingKey extends Field[Seq[RocketCrossingParams]](List(RocketCrossingParams()))
-
-/**
- * Enable trace port
- */
-class WithArianeEnableTrace extends Config((site, here, up) => {
-  case ArianeTilesKey => up(ArianeTilesKey) map (tile => tile.copy(trace = true))
-})
 
 /**
  * Makes cacheable region include to/from host addresses.
@@ -30,10 +21,10 @@ class WithArianeEnableTrace extends Config((site, here, up) => {
  * to/fromhost communication unless those lines are evicted from L1.
  */
 class WithToFromHostCaching extends Config((site, here, up) => {
-  case ArianeTilesKey => up(ArianeTilesKey, site) map { a =>
-    a.copy(core = a.core.copy(
+  case TilesLocated(InSubsystem) => up(TilesLocated(InSubsystem), site) map {
+    case tp: ArianeTileAttachParams => tp.copy(tileParams = tp.tileParams.copy(core = tp.tileParams.core.copy(
       enableToFromHostCaching = true
-    ))
+    )))
   }
 })
 
@@ -43,20 +34,18 @@ class WithToFromHostCaching extends Config((site, here, up) => {
  *
  * @param n amount of tiles to duplicate
  */
-class WithNArianeCores(n: Int) extends Config(
-  new WithNormalArianeSys ++
-  new Config((site, here, up) => {
-    case ArianeTilesKey => {
-      List.tabulate(n)(i => ArianeTileParams(hartId = i))
-    }
-  })
-)
-
-/**
- * Setup default Ariane parameters.
- */
-class WithNormalArianeSys extends Config((site, here, up) => {
+class WithNArianeCores(n: Int = 1, overrideIdOffset: Option[Int] = None) extends Config((site, here, up) => {
+  case TilesLocated(InSubsystem) => {
+    val prev = up(TilesLocated(InSubsystem), site)
+    val idOffset = overrideIdOffset.getOrElse(prev.size)
+    (0 until n).map { i =>
+      ArianeTileAttachParams(
+        tileParams = ArianeTileParams(hartId = i + idOffset),
+        crossingParams = RocketCrossingParams()
+      )
+    } ++ prev
+  }
   case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 8)
   case XLen => 64
-  case MaxHartIdBits => log2Up(site(ArianeTilesKey).size)
 })
+
