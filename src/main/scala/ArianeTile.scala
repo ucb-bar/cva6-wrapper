@@ -133,17 +133,21 @@ class ArianeTile private(
   }
 
   ResourceBinding {
-    Resource(cpuDevice, "reg").bind(ResourceAddress(hartId))
+    Resource(cpuDevice, "reg").bind(ResourceAddress(staticIdForMetadataUseOnly))
   }
 
-  override def makeMasterBoundaryBuffers(implicit p: Parameters) = {
-    if (!arianeParams.boundaryBuffers) super.makeMasterBoundaryBuffers
-    else TLBuffer(BufferParams.none, BufferParams.flow, BufferParams.none, BufferParams.flow, BufferParams(1))
+ override def makeMasterBoundaryBuffers(crossing: ClockCrossingType)(implicit p: Parameters) = crossing match {
+    case _: RationalCrossing =>
+      if (!arianeParams.boundaryBuffers) TLBuffer(BufferParams.none)
+      else TLBuffer(BufferParams.none, BufferParams.flow, BufferParams.none, BufferParams.flow, BufferParams(1))
+    case _ => TLBuffer(BufferParams.none)
   }
 
-  override def makeSlaveBoundaryBuffers(implicit p: Parameters) = {
-    if (!arianeParams.boundaryBuffers) super.makeSlaveBoundaryBuffers
-    else TLBuffer(BufferParams.flow, BufferParams.none, BufferParams.none, BufferParams.none, BufferParams.none)
+  override def makeSlaveBoundaryBuffers(crossing: ClockCrossingType)(implicit p: Parameters) = crossing match {
+    case _: RationalCrossing =>
+      if (!arianeParams.boundaryBuffers) TLBuffer(BufferParams.none)
+      else TLBuffer(BufferParams.flow, BufferParams.none, BufferParams.none, BufferParams.none, BufferParams.none)
+    case _ => TLBuffer(BufferParams.none)
   }
 
   override lazy val module = new ArianeTileModuleImp(this)
@@ -193,8 +197,9 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
   val fromhostAddr = BigInt(0x80001040L) // CONSTANT: based on default sw (assume within extMem region)
 
   // have the main memory, bootrom, debug regions be executable
-  val executeRegionBases = Seq(p(ExtMem).get.master.base,      p(BootROMParams).address, debugBaseAddr, BigInt(0x0), BigInt(0x0))
-  val executeRegionSzs   = Seq(p(ExtMem).get.master.size, BigInt(p(BootROMParams).size),       debugSz, BigInt(0x0), BigInt(0x0))
+  val bootromParams = p(BootROMLocated(InSubsystem)).get
+  val executeRegionBases = Seq(p(ExtMem).get.master.base,      bootromParams.address, debugBaseAddr, BigInt(0x0), BigInt(0x0))
+  val executeRegionSzs   = Seq(p(ExtMem).get.master.size, BigInt(bootromParams.size),       debugSz, BigInt(0x0), BigInt(0x0))
   val executeRegionCnt   = executeRegionBases.length
 
   // have the main memory be cached, but don't cache tohost/fromhost addresses
@@ -242,8 +247,8 @@ class ArianeTileModuleImp(outer: ArianeTile) extends BaseTileModuleImp(outer){
 
   core.io.clk_i := clock
   core.io.rst_ni := ~reset.asBool
-  core.io.boot_addr_i := constants.reset_vector
-  core.io.hart_id_i := constants.hartid
+  core.io.boot_addr_i := outer.resetVectorSinkNode.bundle
+  core.io.hart_id_i := outer.hartIdSinkNode.bundle
 
   outer.connectArianeInterrupts(core.io.debug_req_i, core.io.ipi_i, core.io.time_irq_i, core.io.irq_i)
 
