@@ -1,10 +1,10 @@
 // ******************************************************************
-// Wrapper for the Ariane Core
+// Wrapper for the CVA6 Core
 // ******************************************************************
 
 `define HARTID_LEN 64
 
-module ArianeCoreBlackbox
+module CVA6CoreBlackbox
     #(
         parameter TRACEPORT_SZ = 0,
         parameter XLEN = 0,
@@ -101,7 +101,7 @@ module ArianeCoreBlackbox
     input [AXI_USER_WIDTH-1:0] axi_resp_i_r_bits_user
 );
 
-    localparam ariane_pkg::ariane_cfg_t ArianeSocCfg = '{
+    localparam ariane_pkg::ariane_cfg_t CVA6SocCfg = '{
         RASDepth: RAS_ENTRIES,
         BTBEntries: BTB_ENTRIES,
         BHTEntries: BHT_ENTRIES,
@@ -132,7 +132,7 @@ module ArianeCoreBlackbox
         traced_instr_pkg::trace_port_t tp_if;
 
         ariane #(
-            .ArianeCfg ( ArianeSocCfg )
+            .CVA6Cfg ( CVA6SocCfg )
         ) i_ariane (
             .clk_i,
             .rst_ni,
@@ -148,7 +148,7 @@ module ArianeCoreBlackbox
         );
     `else
         ariane #(
-            .ArianeCfg ( ArianeSocCfg )
+            .CVA6Cfg ( CVA6SocCfg )
         ) i_ariane (
             .clk_i,
             .rst_ni,

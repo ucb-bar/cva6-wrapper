@@ -3,7 +3,7 @@
 // All Rights Reserved. See LICENSE and LICENSE.SiFive for license details.
 //------------------------------------------------------------------------------
 
-package ariane
+package cva6
 
 import chisel3._
 import chisel3.util.{log2Up}
@@ -22,25 +22,25 @@ import freechips.rocketchip.tile._
  */
 class WithToFromHostCaching extends Config((site, here, up) => {
   case TilesLocated(InSubsystem) => up(TilesLocated(InSubsystem), site) map {
-    case tp: ArianeTileAttachParams => tp.copy(tileParams = tp.tileParams.copy(core = tp.tileParams.core.copy(
+    case tp: CVA6TileAttachParams => tp.copy(tileParams = tp.tileParams.copy(core = tp.tileParams.core.copy(
       enableToFromHostCaching = true
     )))
   }
 })
 
 /**
- * Create multiple copies of a Ariane tile (and thus a core).
+ * Create multiple copies of a CVA6 tile (and thus a core).
  * Override with the default mixins to control all params of the tiles.
  *
  * @param n amount of tiles to duplicate
  */
-class WithNArianeCores(n: Int = 1, overrideIdOffset: Option[Int] = None) extends Config((site, here, up) => {
+class WithNCVA6Cores(n: Int = 1, overrideIdOffset: Option[Int] = None) extends Config((site, here, up) => {
   case TilesLocated(InSubsystem) => {
     val prev = up(TilesLocated(InSubsystem), site)
     val idOffset = overrideIdOffset.getOrElse(prev.size)
     (0 until n).map { i =>
-      ArianeTileAttachParams(
-        tileParams = ArianeTileParams(hartId = i + idOffset),
+      CVA6TileAttachParams(
+        tileParams = CVA6TileParams(hartId = i + idOffset),
         crossingParams = RocketCrossingParams()
       )
     } ++ prev

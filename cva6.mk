@@ -7,4 +7,4 @@
 ##################################################################
 
 # requirements needed to run the generator
-EXTRA_GENERATOR_REQS += $(call lookup_srcs,$(base_dir)/generators/ariane,sv) $(call lookup_srcs,$(base_dir)/generators/ariane,v)
+EXTRA_GENERATOR_REQS += $(call lookup_srcs,$(base_dir)/generators/cva6,sv) $(call lookup_srcs,$(base_dir)/generators/cva6,v)
