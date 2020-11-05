@@ -132,7 +132,7 @@ module CVA6CoreBlackbox
         traced_instr_pkg::trace_port_t tp_if;
 
         ariane #(
-            .CVA6Cfg ( CVA6SocCfg )
+            .ArianeCfg ( CVA6SocCfg )
         ) i_ariane (
             .clk_i,
             .rst_ni,
@@ -148,7 +148,7 @@ module CVA6CoreBlackbox
         );
     `else
         ariane #(
-            .CVA6Cfg ( CVA6SocCfg )
+            .ArianeCfg ( CVA6SocCfg )
         ) i_ariane (
             .clk_i,
             .rst_ni,
