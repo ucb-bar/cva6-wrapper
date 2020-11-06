@@ -5,11 +5,11 @@
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-// Ariane Tile Wrapper
+// CVA6 Tile Wrapper
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-package ariane
+package cva6
 
 import sys.process._
 
@@ -32,7 +32,7 @@ import freechips.rocketchip.util._
 import freechips.rocketchip.tile._
 import freechips.rocketchip.amba.axi4._
 
-class ArianeCoreBlackbox(
+class CVA6CoreBlackbox(
   traceportEnabled: Boolean,
   traceportSz: Int,
   xLen: Int,
@@ -139,10 +139,10 @@ class ArianeCoreBlackbox(
   require((cacheRegCnt <= cacheRegAvail) && (cacheRegBase.length <= cacheRegAvail) && (cacheRegSz.length <= cacheRegAvail), s"Currently only supports $cacheRegAvail cacheable regions")
 
   // pre-process the verilog to remove "includes" and combine into one file
-  val make = "make -C generators/ariane/src/main/resources/vsrc default "
+  val make = "make -C generators/cva6/src/main/resources/vsrc default "
   val proc = if (traceportEnabled) make + "EXTRA_PREPROC_DEFINES=FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
   // add wrapper/blackbox after it is pre-processed
-  addResource("/vsrc/ArianeCoreBlackbox.preprocessed.sv")
+  addResource("/vsrc/CVA6CoreBlackbox.preprocessed.sv")
 }
