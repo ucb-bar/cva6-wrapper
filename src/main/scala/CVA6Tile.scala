@@ -29,6 +29,7 @@ import freechips.rocketchip.interrupts._
 import freechips.rocketchip.util._
 import freechips.rocketchip.tile._
 import freechips.rocketchip.amba.axi4._
+import freechips.rocketchip.prci.ClockSinkParameters
 
 case class CVA6CoreParams(
   bootFreqHz: BigInt = BigInt(1700000000),
@@ -51,6 +52,7 @@ case class CVA6CoreParams(
   val mulDiv: Option[MulDivParams] = Some(MulDivParams()) // copied from Rocket
   val fpu: Option[FPUParams] = Some(FPUParams()) // copied fma latencies from Rocket
   val nLocalInterrupts: Int = 0
+  val useNMI: Boolean = false
   val nPMPs: Int = 0 // TODO: Check
   val pmpGranularity: Int = 4 // copied from Rocket
   val nBreakpoints: Int = 0 // TODO: Check
@@ -63,6 +65,7 @@ case class CVA6CoreParams(
   val misaWritable: Boolean = false
   val haveCFlush: Boolean = false
   val nL2TLBEntries: Int = 512 // copied from Rocket
+  val nL2TLBWays: Int = 1
   val mtvecInit: Option[BigInt] = Some(BigInt(0)) // copied from Rocket
   val mtvecWritable: Boolean = true // copied from Rocket
   val instBits: Int = if (useCompressed) 16 else 32
@@ -94,6 +97,7 @@ case class CVA6TileParams(
   val boundaryBuffers: Boolean = false
   val dcache: Option[DCacheParams] = Some(DCacheParams())
   val icache: Option[ICacheParams] = Some(ICacheParams())
+  val clockSinkParams: ClockSinkParameters = ClockSinkParameters()
   def instantiate(crossing: TileCrossingParamsLike, lookup: LookupByHartIdImpl)(implicit p: Parameters): CVA6Tile = {
     new CVA6Tile(this, crossing, lookup)
   }
