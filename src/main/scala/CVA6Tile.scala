@@ -36,6 +36,7 @@ case class CVA6CoreParams(
   rasEntries: Int = 4,
   btbEntries: Int = 16,
   bhtEntries: Int = 16,
+  pmpEntries: Int = 8,
   enableToFromHostCaching: Boolean = false,
 ) extends CoreParams {
   /* DO NOT CHANGE BELOW THIS */
@@ -248,7 +249,8 @@ class CVA6TileModuleImp(outer: CVA6Tile) extends BaseTileModuleImp(outer){
     axiAddrWidth = 64, // CONSTANT: addr width for TL can differ
     axiDataWidth = outer.beatBytes * 8,
     axiUserWidth = outer.sourceBits,
-    axiIdWidth = outer.idBits
+    axiIdWidth = outer.idBits,
+    pmpEntries = outer.cva6Params.core.pmpEntries
   ))
 
   core.io.clk_i := clock
