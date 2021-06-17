@@ -43,7 +43,8 @@ CVA6_VSRCS = \
 	$(cva6_dir)/src/csr_buffer.sv \
 	$(cva6_dir)/src/csr_regfile.sv \
 	$(cva6_dir)/src/decoder.sv \
-	$(cva6_dir)/src/ex_stage.sv \
+        $(cva6_dir)/src/dromajo_ram.sv \	
+        $(cva6_dir)/src/ex_stage.sv \
 	$(cva6_dir)/src/fpu_wrap.sv \
 	$(cva6_dir)/src/id_stage.sv \
 	$(cva6_dir)/src/instr_realign.sv \
@@ -85,7 +86,7 @@ CVA6_VSRCS = \
 	$(cva6_dir)/src/frontend/instr_queue.sv \
 	$(cva6_dir)/src/frontend/instr_scan.sv \
 	$(cva6_dir)/src/frontend/ras.sv \
-	$(cva6_dir)/src/cache_subsystem/wt_icache.sv \
+	$(cva6_dir)/src/cache_subsystem/cva6_icache.sv \
 	$(cva6_dir)/src/cache_subsystem/wt_dcache_wbuffer.sv \
 	$(cva6_dir)/src/cache_subsystem/wt_dcache.sv \
 	$(cva6_dir)/src/cache_subsystem/wt_dcache_missunit.sv \
@@ -111,7 +112,9 @@ CVA6_VSRCS = \
 	$(cva6_dir)/src/common_cells/src/popcount.sv \
 	$(cva6_dir)/src/common_cells/src/rr_arb_tree.sv \
 	$(cva6_dir)/src/common_cells/src/lfsr_8bit.sv \
-	$(cva6_dir)/src/common_cells/src/shift_reg.sv
+	$(cva6_dir)/src/common_cells/src/shift_reg.sv \
+	$(cva6_dir)/src/pmp/src/pmp.sv \
+	$(cva6_dir)/src/pmp/src/pmp_entry.sv
 
 CVA6_WRAPPER = \
 	$(vsrc_dir)/CVA6CoreBlackbox.sv
