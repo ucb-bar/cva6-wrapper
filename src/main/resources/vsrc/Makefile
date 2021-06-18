@@ -43,8 +43,8 @@ CVA6_VSRCS = \
 	$(cva6_dir)/src/csr_buffer.sv \
 	$(cva6_dir)/src/csr_regfile.sv \
 	$(cva6_dir)/src/decoder.sv \
-        $(cva6_dir)/src/dromajo_ram.sv \	
-        $(cva6_dir)/src/ex_stage.sv \
+	$(cva6_dir)/src/dromajo_ram.sv \	
+	$(cva6_dir)/src/ex_stage.sv \
 	$(cva6_dir)/src/fpu_wrap.sv \
 	$(cva6_dir)/src/id_stage.sv \
 	$(cva6_dir)/src/instr_realign.sv \
