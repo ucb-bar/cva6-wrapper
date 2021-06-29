@@ -37,7 +37,8 @@ module CVA6CoreBlackbox
         parameter AXI_ADDRESS_WIDTH = 0,
         parameter AXI_DATA_WIDTH = 0,
         parameter AXI_USER_WIDTH = 0,
-        parameter AXI_ID_WIDTH = 0
+        parameter AXI_ID_WIDTH = 0,
+        parameter PMP_ENTRIES = 0
      )
 (
     input clk_i,
@@ -121,7 +122,8 @@ module CVA6CoreBlackbox
         Axi64BitCompliant:      1'b1,
         SwapEndianess:          1'b0,
         // debug
-        DmBaseAddress:          DEBUG_BASE
+        DmBaseAddress:          DEBUG_BASE,
+        NrPMPEntries:           PMP_ENTRIES
     };
 
     // connect ariane

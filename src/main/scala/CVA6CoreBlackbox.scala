@@ -51,7 +51,8 @@ class CVA6CoreBlackbox(
   axiAddrWidth: Int,
   axiDataWidth: Int,
   axiUserWidth: Int,
-  axiIdWidth: Int)
+  axiIdWidth: Int,
+  pmpEntries: Int)
   extends BlackBox(
     Map(
       "TRACEPORT_SZ" -> IntParam(traceportSz),
@@ -65,7 +66,8 @@ class CVA6CoreBlackbox(
       "AXI_ADDRESS_WIDTH" -> IntParam(axiAddrWidth),
       "AXI_DATA_WIDTH" -> IntParam(axiDataWidth),
       "AXI_USER_WIDTH" -> IntParam(axiUserWidth),
-      "AXI_ID_WIDTH" -> IntParam(axiIdWidth)) ++
+      "AXI_ID_WIDTH" -> IntParam(axiIdWidth),
+      "PMP_ENTRIES" -> IntParam(pmpEntries)) ++
     (0 until execRegAvail).map(i => s"EXEC_REG_BASE_$i" -> IntParam(exeRegBase(i))).toMap ++
     (0 until execRegAvail).map(i => s"EXEC_REG_SZ_$i" -> IntParam(exeRegSz(i))).toMap ++
     (0 until cacheRegAvail).map(i => s"CACHE_REG_BASE_$i" -> IntParam(cacheRegBase(i))).toMap ++
