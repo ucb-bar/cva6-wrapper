@@ -41,6 +41,7 @@ case class CVA6CoreParams(
 ) extends CoreParams {
   /* DO NOT CHANGE BELOW THIS */
   val useVM: Boolean = true
+  val useHypervisor: Boolean = false
   val useUser: Boolean = true
   val useSupervisor: Boolean = false
   val useDebug: Boolean = true
@@ -74,6 +75,7 @@ case class CVA6CoreParams(
   val decodeWidth: Int = 1 // TODO: Check
   val fetchWidth: Int = 1 // TODO: Check
   val retireWidth: Int = 2
+  val nPTECacheEntries: Int = 8 // TODO: Check
 }
 
 case class CVA6TileAttachParams(
