@@ -73,7 +73,7 @@ class CVA6CoreBlackbox(
     (0 until cacheRegAvail).map(i => s"CACHE_REG_BASE_$i" -> IntParam(cacheRegBase(i))).toMap ++
     (0 until cacheRegAvail).map(i => s"CACHE_REG_SZ_$i" -> IntParam(cacheRegSz(i))).toMap
   )
-  with HasBlackBoxResource
+  with HasBlackBoxPath
 {
   val io = IO(new Bundle {
     val clk_i = Input(Clock())
@@ -140,11 +140,14 @@ class CVA6CoreBlackbox(
   require((exeRegCnt <= execRegAvail) && (exeRegBase.length <= execRegAvail) && (exeRegSz.length <= execRegAvail), s"Currently only supports $execRegAvail execution regions")
   require((cacheRegCnt <= cacheRegAvail) && (cacheRegBase.length <= cacheRegAvail) && (cacheRegSz.length <= cacheRegAvail), s"Currently only supports $cacheRegAvail cacheable regions")
 
+  val chipyardDir = System.getProperty("user.dir")
+  val cva6VsrcDir = s"$chipyardDir/generators/cva6/src/main/resources/vsrc"
+
   // pre-process the verilog to remove "includes" and combine into one file
-  val make = "make -C generators/cva6/src/main/resources/vsrc default "
+  val make = s"make -C $cva6VsrcDir default "
   val proc = if (traceportEnabled) make + "EXTRA_PREPROC_DEFINES=FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
   // add wrapper/blackbox after it is pre-processed
-  addResource("/vsrc/CVA6CoreBlackbox.preprocessed.sv")
+  addPath(s"$cva6VsrcDir/CVA6CoreBlackbox.preprocessed.sv")
 }
