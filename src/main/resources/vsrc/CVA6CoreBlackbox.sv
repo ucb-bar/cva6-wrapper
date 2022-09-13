@@ -194,11 +194,8 @@ module CVA6CoreBlackbox
     ) axi_slave_bus();
 
     // convert ariane axi port to normal axi port
-    axi_master_connect i_axi_master_connect_ariane (
-        .axi_req_i(ariane_axi_req),
-        .axi_resp_o(ariane_axi_resp),
-        .master(axi_slave_bus)
-    );
+    `AXI_ASSIGN_FROM_REQ(axi_slave_bus, ariane_axi_req)
+    `AXI_ASSIGN_TO_RESP(ariane_axi_resp, axi_slave_bus)
 
     AXI_BUS #(
         .AXI_ADDR_WIDTH(AXI_ADDRESS_WIDTH),
