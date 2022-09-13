@@ -58,11 +58,6 @@ src := $(filter-out $(cva6_dir)/core/ariane_regfile.sv, $(wildcard $(cva6_dir)/c
        	$(wildcard $(cva6_dir)/core/cache_subsystem/*.sv))                                       \
        $(wildcard $(cva6_dir)/corev_apu/bootrom/*.sv)                                           \
        $(wildcard $(cva6_dir)/corev_apu/clint/*.sv)                                             \
-       $(wildcard $(cva6_dir)/corev_apu/fpga/src/axi2apb/src/*.sv)                              \
-       $(wildcard $(cva6_dir)/corev_apu/fpga/src/apb_timer/*.sv)                                \
-       $(wildcard $(cva6_dir)/corev_apu/fpga/src/axi_slice/src/*.sv)                            \
-       $(wildcard $(cva6_dir)/corev_apu/src/axi_riscv_atomics/src/*.sv)                         \
-       $(wildcard $(cva6_dir)/corev_apu/axi_mem_if/src/*.sv)                                    \
        $(wildcard $(cva6_dir)/core/pmp/src/*.sv)                                                \
        $(wildcard $(cva6_dir)/core/cvxif_example/*.sv)                                          \
        $(cva6_dir)/corev_apu/rv_plic/rtl/rv_plic_target.sv                                      \
@@ -77,8 +72,6 @@ src := $(filter-out $(cva6_dir)/core/ariane_regfile.sv, $(wildcard $(cva6_dir)/c
        $(cva6_dir)/corev_apu/riscv-dbg/src/dm_sba.sv                                            \
        $(cva6_dir)/corev_apu/riscv-dbg/src/dm_top.sv                                            \
        $(cva6_dir)/corev_apu/riscv-dbg/debug_rom/debug_rom.sv                                   \
-       $(cva6_dir)/corev_apu/register_interface/src/apb_to_reg.sv                               \
-       $(cva6_dir)/corev_apu/axi/src/axi_multicut.sv                                            \
        $(cva6_dir)/common/submodules/common_cells/src/rstgen_bypass.sv                          \
        $(cva6_dir)/common/submodules/common_cells/src/rstgen.sv                                 \
        $(cva6_dir)/common/submodules/common_cells/src/stream_mux.sv                             \
@@ -86,16 +79,6 @@ src := $(filter-out $(cva6_dir)/core/ariane_regfile.sv, $(wildcard $(cva6_dir)/c
        $(cva6_dir)/common/submodules/common_cells/src/exp_backoff.sv                            \
        $(cva6_dir)/common/submodules/common_cells/src/addr_decode.sv                            \
        $(cva6_dir)/common/submodules/common_cells/src/stream_register.sv                        \
-       $(cva6_dir)/corev_apu/axi/src/axi_cut.sv                                                 \
-       $(cva6_dir)/corev_apu/axi/src/axi_join.sv                                                \
-       $(cva6_dir)/corev_apu/axi/src/axi_delayer.sv                                             \
-       $(cva6_dir)/corev_apu/axi/src/axi_to_axi_lite.sv                                         \
-       $(cva6_dir)/corev_apu/axi/src/axi_id_prepend.sv                                          \
-       $(cva6_dir)/corev_apu/axi/src/axi_atop_filter.sv                                         \
-       $(cva6_dir)/corev_apu/axi/src/axi_err_slv.sv                                             \
-       $(cva6_dir)/corev_apu/axi/src/axi_mux.sv                                                 \
-       $(cva6_dir)/corev_apu/axi/src/axi_demux.sv                                               \
-       $(cva6_dir)/corev_apu/axi/src/axi_xbar.sv                                                \
        $(cva6_dir)/common/submodules/common_cells/src/unread.sv                                 \
        $(cva6_dir)/common/submodules/common_cells/src/sync.sv                                   \
        $(cva6_dir)/common/submodules/common_cells/src/cdc_2phase.sv                             \
@@ -133,16 +116,12 @@ else
     src += $(wildcard $(cva6_dir)/core/mmu_sv39/*.sv)
 endif
 
-copro_src := $(cva6_dir)/core/cvxif_example/include/cvxif_instr_pkg.sv \
-             $(wildcard $(cva6_dir)/core/cvxif_example/*.sv)
-
 CVA6_WRAPPER = \
 	$(vsrc_dir)/CVA6CoreBlackbox.sv
 
 ALL_VSRCS = \
 	$(filter-out %.vhd, $(ariane_pkg)) \
 	$(filter-out core/fpu_wrap.sv, $(filter-out %.vhd, $(src))) \
-	$(copro_src) \
 	$(CVA6_WRAPPER)
 
 #########################################################################################

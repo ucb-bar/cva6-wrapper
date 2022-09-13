@@ -4,6 +4,8 @@
 
 `define HARTID_LEN 64
 
+`include "axi/assign.svh"
+
 module CVA6CoreBlackbox
     #(
         parameter TRACEPORT_SZ = 0,
