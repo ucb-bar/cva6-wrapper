@@ -144,7 +144,7 @@ class CVA6CoreBlackbox(
   val cva6VsrcDir = s"$chipyardDir/generators/cva6/src/main/resources/vsrc"
 
   // pre-process the verilog to remove "includes" and combine into one file
-  val make = s"make -C $cva6VsrcDir default "
+  val make = s"make -C ${cva6VsrcDir}/cva6-make default "
   val proc = if (traceportEnabled) make + "EXTRA_PREPROC_DEFINES=FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
