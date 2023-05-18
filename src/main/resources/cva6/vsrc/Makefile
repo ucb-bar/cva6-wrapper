@@ -6,7 +6,7 @@ vsrc_dir=$(abspath .)
 cva6_dir=$(vsrc_dir)/cva6
 
 # name of output pre-processed verilog file
-PREPROC_VERILOG = CVA6CoreBlackbox.preprocessed.sv
+PREPROC_VERILOG = $(vsrc_dir)/CVA6CoreBlackbox.preprocessed.sv
 
 .PHONY: default $(PREPROC_VERILOG)
 default: $(PREPROC_VERILOG)
