@@ -1,8 +1,8 @@
 #########################################################################################
 # pre-process CVA6 into a single blackbox file
 #########################################################################################
-base_dir=$(abspath ../../../../../../..)
-vsrc_dir=$(abspath ..)
+base_dir=$(abspath ../../../../../..)
+vsrc_dir=$(abspath .)
 cva6_dir=$(vsrc_dir)/cva6
 
 # name of output pre-processed verilog file
