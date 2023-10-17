@@ -34,18 +34,19 @@ class WithToFromHostCaching extends Config((site, here, up) => {
  *
  * @param n amount of tiles to duplicate
  */
-class WithNCVA6Cores(n: Int = 1, overrideIdOffset: Option[Int] = None) extends Config((site, here, up) => {
+class WithNCVA6Cores(n: Int = 1) extends Config((site, here, up) => {
   case TilesLocated(InSubsystem) => {
     val prev = up(TilesLocated(InSubsystem), site)
-    val idOffset = overrideIdOffset.getOrElse(prev.size)
+    val idOffset = up(NumTiles)
     (0 until n).map { i =>
       CVA6TileAttachParams(
-        tileParams = CVA6TileParams(hartId = i + idOffset),
+        tileParams = CVA6TileParams(tileId = i + idOffset),
         crossingParams = RocketCrossingParams()
       )
     } ++ prev
   }
   case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 8)
   case XLen => 64
+  case NumTiles => up(NumTiles) + n
 })
 
