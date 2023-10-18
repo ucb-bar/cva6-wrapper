@@ -130,7 +130,7 @@ class CVA6Tile private(
   def this(params: CVA6TileParams, crossing: HierarchicalElementCrossingParamsLike, lookup: LookupByHartIdImpl)(implicit p: Parameters) =
     this(params, crossing.crossingType, lookup, p)
 
-  val intOutwardNode = Some(IntIdentityNode())
+  val intOutwardNode = None
   val slaveNode = TLIdentityNode()
   val masterNode = visibilityNode
 
