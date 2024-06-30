@@ -46,7 +46,6 @@ class WithNCVA6Cores(n: Int = 1) extends Config((site, here, up) => {
     } ++ prev
   }
   case SystemBusKey => up(SystemBusKey, site).copy(beatBytes = 8)
-  case XLen => 64
   case NumTiles => up(NumTiles) + n
 })
 
