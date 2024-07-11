@@ -31,6 +31,7 @@ import freechips.rocketchip.tile._
 import freechips.rocketchip.amba.axi4._
 
 case class CVA6CoreParams(
+  xLen: Int = 64,
   bootFreqHz: BigInt = BigInt(1700000000),
   rasEntries: Int = 4,
   btbEntries: Int = 16,
@@ -81,6 +82,7 @@ case class CVA6CoreParams(
   val useCryptoSM: Boolean = false
   val traceHasWdata: Boolean = false
   val useConditionalZero: Boolean = false
+  val pgLevels = if (xLen == 64) 3 else 2
 }
 
 case class CVA6TileAttachParams(
@@ -244,7 +246,7 @@ class CVA6TileModuleImp(outer: CVA6Tile) extends BaseTileModuleImp(outer){
     traceportSz = (outer.cva6Params.core.retireWidth * traceInstSz),
 
     // general core params
-    xLen = p(XLen),
+    xLen = outer.cva6Params.core.xLen,
     rasEntries = outer.cva6Params.core.rasEntries,
     btbEntries = outer.cva6Params.core.btbEntries,
     bhtEntries = outer.cva6Params.core.bhtEntries,
