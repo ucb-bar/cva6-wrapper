@@ -76,10 +76,6 @@ case class CVA6CoreParams(
   val fetchWidth: Int = 1 // TODO: Check
   val retireWidth: Int = 2
   val nPTECacheEntries: Int = 8 // TODO: Check
-  val useBitManip: Boolean = false
-  val useBitManipCrypto: Boolean = false
-  val useCryptoNIST: Boolean = false
-  val useCryptoSM: Boolean = false
   val traceHasWdata: Boolean = false
   val useConditionalZero: Boolean = false
   val useZba: Boolean = false
