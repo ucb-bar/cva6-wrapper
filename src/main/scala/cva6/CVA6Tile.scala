@@ -82,6 +82,9 @@ case class CVA6CoreParams(
   val useCryptoSM: Boolean = false
   val traceHasWdata: Boolean = false
   val useConditionalZero: Boolean = false
+  val useZba: Boolean = false
+  val useZbb: Boolean = false
+  val useZbs: Boolean = false
   val pgLevels = if (xLen == 64) 3 else 2
 }
 
