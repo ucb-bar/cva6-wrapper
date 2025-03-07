@@ -205,9 +205,6 @@ class CVA6Tile private(
 }
 
 class CVA6TileModuleImp(outer: CVA6Tile) extends BaseTileModuleImp(outer){
-  // annotate the parameters
-  Annotated.params(this, outer.cva6Params)
-
   val debugBaseAddr = BigInt(0x0) // CONSTANT: based on default debug module
   val debugSz = BigInt(0x1000) // CONSTANT: based on default debug module
   val tohostAddr = BigInt(0x80001000L) // CONSTANT: based on default sw (assume within extMem region)
