@@ -211,7 +211,7 @@ class CVA6TileModuleImp(outer: CVA6Tile) extends BaseTileModuleImp(outer){
   val fromhostAddr = BigInt(0x80001040L) // CONSTANT: based on default sw (assume within extMem region)
 
   // have the main memory, bootrom, debug regions be executable
-  val bootromParams = p(BootROMLocated(InSubsystem)).get
+  val bootromParams = p(BootROMLocated(InSubsystem)).head
   val executeRegionBases = Seq(p(ExtMem).get.master.base,      bootromParams.address, debugBaseAddr, BigInt(0x0), BigInt(0x0))
   val executeRegionSzs   = Seq(p(ExtMem).get.master.size, BigInt(bootromParams.size),       debugSz, BigInt(0x0), BigInt(0x0))
   val executeRegionCnt   = executeRegionBases.length
