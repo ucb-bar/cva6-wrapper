@@ -289,6 +289,8 @@ PREPROC_DEFINES ?= \
 	SRAM_NO_INIT \
 	$(EXTRA_PREPROC_DEFINES)
 
+EXTRA_SIM_SOURCES += $(base_dir)/generators/cva6/src/main/resources/cva6/vsrc/memories.sv
+
 PREPROC_SCRIPT = $(base_dir)/scripts/insert-includes.py
 
 ## TODO (franout): there is probably a clever way to automatically generate memory instances for the synthesis
