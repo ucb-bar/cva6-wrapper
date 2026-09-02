@@ -1,3 +1,4 @@
 CVA6CoreBlackbox.preprocessed.sv
 cva6_config_pkg.sv
 memories.sv
+memories_wrapper.sv

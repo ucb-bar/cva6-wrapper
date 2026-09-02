@@ -52,8 +52,6 @@ CVA6_VSRCS = \
 	$(cva6_dir)/core/compressed_decoder.sv \
 	$(cva6_dir)/core/controller.sv \
 	$(cva6_dir)/core/csr_buffer.sv \
-	$(cva6_dir)/common/local/util/tc_sram_wrapper_cache_techno.sv \
-	$(cva6_dir)/common/local/util/tc_sram_wrapper.sv \
 	$(cva6_dir)/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_clk.sv \
 	$(cva6_dir)/core/cva6_accel_first_pass_decoder_stub.sv \
 	$(cva6_dir)/core/cvfpu/src/common_cells/src/addr_decode.sv \
@@ -192,9 +190,6 @@ CVA6_VSRCS = \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_decoder.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_1hot_to_binary.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_prio_1hot_encoder.sv \
-	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_sram.sv \
-	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_sram_wbyteenable.sv \
-	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_sram_wmask.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_regbank_wbyteenable_1rw.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_regbank_wmask_1rw.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_data_downsize.sv \
@@ -226,7 +221,6 @@ CVA6_VSRCS = \
 	$(cva6_cache_dir)/cva6_hpdcache_subsystem_axi_arbiter.sv \
 	$(cva6_cache_dir)/cva6_hpdcache_if_adapter.sv \
 	$(cva6_cache_dir)/cva6_hpdcache_wrapper.sv \
-	$(cva6_cache_dir)/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv \
 	$(cva6_dir)/corev_apu/src/axi_riscv_atomics/src/axi_res_tbl.sv \
 	$(cva6_dir)/corev_apu/src/axi_riscv_atomics/src/axi_riscv_amos_alu.sv \
 	$(cva6_dir)/corev_apu/src/axi_riscv_atomics/src/axi_riscv_amos.sv \
@@ -258,20 +252,23 @@ CVA6_WRAPPER = \
 
 # Needed for cache simulation 
 MEMORIES = \
-	$(cva6_dir)/common/local/util/sram.sv \
 	$(cva6_dir)/vendor/pulp-platform/tech_cells_generic/src/rtl/tc_sram.sv \
-	$(cva6_dir)/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv\
-	$(cva6_dir)/common/local/util/tc_sram_wrapper.sv \
+	$(cva6_dir)/pd/synth/tc_sram_wrapper_256_64_00000008_00000001_00000001_none_0.sv \
 	$(cva6_dir)/pd/synth/hpdcache_sram_wbyteenable_1rw_00000007_00000040_00000080.sv \
-	$(cva6_dir)/pd/synth/hpdcache_sram_1rw_00000006_0000001c_00000040.sv\
+	$(cva6_dir)/pd/synth/hpdcache_sram_1rw_00000006_0000001c_00000040.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_1rw.sv \
 	$(cva6_cache_dir)/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wmask_1rw.sv \
-	$(cva6_dir)/common/local/util/sram_cache.sv
-	
-#$(cva6_dir)/common/local/util/tc_sram_wrapper_cache_techno.sv 
+	$(cva6_cache_dir)/hpdcache/rtl/src/common/macros/behav/hpdcache_sram_wbyteenable_1rw.sv
+
+MEMORIES_WRAPPER = \
+	$(cva6_dir)/common/local/util/tc_sram_wrapper.sv \
+	$(cva6_dir)/common/local/util/sram_cache.sv \
+	$(cva6_cache_dir)/hpdcache/rtl/src/common/hpdcache_sram.sv 
+
+#	$(cva6_dir)/common/local/util/tc_sram_wrapper_cache_techno.sv \
 
 # CVA6_CONFIG_PKG must be at the top of the file
-ALL_VSRCS = $(CVA6_CONFIG_PKG) $(CVA6_CORE_CONFIG_PKG) $(CVA6_PKGS) $(MEMORIES) $(CVA6_VSRCS) $(CVA6_WRAPPER) 
+ALL_VSRCS = $(CVA6_CONFIG_PKG) $(CVA6_CORE_CONFIG_PKG) $(CVA6_PKGS) $(CVA6_VSRCS) $(CVA6_WRAPPER) 
 
 #########################################################################################
 # pre-process using verilator
@@ -289,19 +286,24 @@ PREPROC_DEFINES ?= \
 	SRAM_NO_INIT \
 	$(EXTRA_PREPROC_DEFINES)
 
-EXTRA_SIM_SOURCES += $(base_dir)/generators/cva6/src/main/resources/cva6/vsrc/memories.sv
 
 PREPROC_SCRIPT = $(base_dir)/scripts/insert-includes.py
 
 ## TODO (franout): there is probably a clever way to automatically generate memory instances for the synthesis
 
-$(PREPROC_VERILOG): $(ALL_VSRCS)
+$(PREPROC_VERILOG): $(ALL_VSRCS) $(MEMORIES_WRAPPER) $(MEMORIES)
 	mkdir -p $(dir $(PREPROC_VERILOG))
 	cat $(MEMORIES) > memories.sv
 	cat custom_memories.sv >> memories.sv
+	sed -i -e '/synthesis translate_off/d' -e '/synthesis translate_on/d' memories.sv
+	cat $(MEMORIES_WRAPPER) > memories_wrapper.sv
+	# Remove synthesis pragma
+	sed -i -e '/synthesis translate_off/d' -e '/synthesis translate_on/d' memories_wrapper.sv
+	# For this the pragma is needed
+	cat $(cva6_dir)/common/local/util/sram.sv >> memories_wrapper.sv
 	$(foreach def,$(PREPROC_DEFINES),echo "\`define $(def)" >> def.v; )
 	$(foreach def,$(PREPROC_DEFINES),echo "\`undef $(def)" >> undef.v; )
-	cat def.v $(ALL_VSRCS) undef.v > combined.sv
+	cat def.v memories.sv memories_wrapper.sv $(ALL_VSRCS) undef.v > combined.sv
 	# Remove problematic temporary include lines in a portable way (no in-place sed)
 	sed -e '/l15.tmp.h/d' -e '/define.tmp.h/d' combined.sv > combined.sv.stripped && mv combined.sv.stripped combined.sv
 	$(PREPROC_SCRIPT) combined.sv $@ $(INC_DIRS)
