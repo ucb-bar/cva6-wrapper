@@ -72,7 +72,7 @@ class CVA6CoreBlackbox(
 {
   val io = IO(new Bundle {
     val clk_i = Input(Clock())
-    val rst_ni = Input(Bool())
+    val rst = Input(Bool())
     val boot_addr_i = Input(UInt(64.W))
     val hart_id_i = Input(UInt(64.W))
     val irq_i = Input(UInt(2.W))
@@ -139,8 +139,9 @@ class CVA6CoreBlackbox(
   val cva6VsrcDir = s"$chipyardDir/generators/cva6/src/main/resources/cva6/vsrc"
 
   // pre-process the verilog to remove "includes" and combine into one file
-  val make = s"make -C ${cva6VsrcDir} default "
-  val proc = if (traceportEnabled) make + "EXTRA_PREPROC_DEFINES=FIRESIM_TRACE" else make
+  val preproc_defines = "EXTRA_PREPROC_DEFINES=SYNTHESIS"
+  val make = s"make -C ${cva6VsrcDir} default " + preproc_defines
+  val proc = if (traceportEnabled) make + preproc_defines +" FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
   // add wrapper/blackbox after it is pre-processed

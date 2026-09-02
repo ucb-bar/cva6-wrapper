@@ -9,7 +9,7 @@ module CVA6CoreBlackbox #(
     parameter int TRACEPORT_SZ = 0
 )(
     input  logic                     clk_i,
-    input  logic                     rst_ni,
+    input  logic                     rst,
 
     input  logic [cva6_config_pkg::cva6_soc_cfg.VLEN-1:0]  boot_addr_i,
     input  logic [`HARTID_LEN-1:0]    hart_id_i,
@@ -100,7 +100,12 @@ module CVA6CoreBlackbox #(
       rvfi_probes_instr_t instr;
     };
 
-
+  // ---------------------------------------------------------------------------
+  // Explicit Reset inversion
+  // ---------------------------------------------------------------------------
+    logic rst_no;
+    assign rst_no = ~rst;
+    
   // ---------------------------------------------------------------------------
   // Ariane core
   // ---------------------------------------------------------------------------
@@ -109,10 +114,19 @@ module CVA6CoreBlackbox #(
     .CVA6Cfg ( cva6_config_pkg::cva6_soc_cfg ),
     .rvfi_probes_instr_t  ( rvfi_probes_instr_t ),
     .rvfi_probes_csr_t    ( rvfi_probes_csr_t   ),
-    .rvfi_probes_t        ( rvfi_probes_t       )
+    .rvfi_probes_t        ( rvfi_probes_t       ),
+    // AXI Types
+    .AxiAddrWidth(ariane_axi::AddrWidth),
+    .AxiDataWidth(ariane_axi::DataWidth),
+    .AxiIdWidth(ariane_axi::IdWidth),
+    .axi_ar_chan_t(ariane_axi::ar_chan_t),
+    .axi_aw_chan_t(ariane_axi::aw_chan_t),
+    .axi_w_chan_t (ariane_axi::w_chan_t),
+    .noc_req_t(ariane_axi::req_t),
+    .noc_resp_t(ariane_axi::resp_t)
   ) i_ariane (
     .clk_i,
-    .rst_ni,
+    .rst_ni(rst_no),
     .boot_addr_i,
     .hart_id_i,
     .irq_i,
@@ -200,7 +214,7 @@ module CVA6CoreBlackbox #(
         .RISCV_WORD_WIDTH (cva6_config_pkg::cva6_soc_cfg.XLEN)
     ) i_axi_atomics (
         .clk_i,
-        .rst_ni,
+        .rst_ni(rst_no),
         .slv(axi_slave_bus),
         .mst(axi_master_bus)
     );

@@ -487,7 +487,7 @@ class CVA6TileModuleImp(outer: CVA6Tile) extends BaseTileModuleImp(outer){
   ))
   
   core.io.clk_i := clock
-  core.io.rst_ni := ~reset.asBool
+  core.io.rst := reset.asBool
   core.io.boot_addr_i := outer.resetVectorSinkNode.bundle
   core.io.hart_id_i := outer.hartIdSinkNode.bundle
 
