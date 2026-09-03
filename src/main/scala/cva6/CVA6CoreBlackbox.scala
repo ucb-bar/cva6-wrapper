@@ -36,9 +36,21 @@ class CVA6CoreBlackbox(
   traceportEnabled: Boolean,
   traceportSz: Int,
   xLen: Int,
+  vLen: Int,               
   rasEntries: Int,
   btbEntries: Int,
   bhtEntries: Int,
+  nrScoreboardEntries: Int, 
+  nrLoadPipeRegs: Int,      
+  nrStorePipeRegs: Int,     
+  nrLoadBufEntries: Int,    
+  pmpEntries: Int,
+  // Cache Params
+  iCacheByteSize: Int,      
+  iCacheSetAssoc: Int,      
+  dCacheByteSize: Int,      
+  dCacheSetAssoc: Int,      
+  // Memory Regions
   execRegAvail: Int = 5,
   exeRegCnt: Int,
   exeRegBase: Seq[BigInt],
@@ -51,33 +63,16 @@ class CVA6CoreBlackbox(
   axiAddrWidth: Int,
   axiDataWidth: Int,
   axiUserWidth: Int,
-  axiIdWidth: Int,
-  pmpEntries: Int)
-  extends BlackBox(
+  axiIdWidth: Int
+) extends BlackBox(
     Map(
-      "TRACEPORT_SZ" -> IntParam(traceportSz),
-      "XLEN" -> IntParam(xLen),
-      "RAS_ENTRIES" -> IntParam(rasEntries),
-      "BTB_ENTRIES" -> IntParam(btbEntries),
-      "BHT_ENTRIES" -> IntParam(bhtEntries),
-      "EXEC_REG_CNT" -> IntParam(exeRegCnt),
-      "CACHE_REG_CNT" -> IntParam(cacheRegCnt),
-      "DEBUG_BASE" -> IntParam(debugBase),
-      "AXI_ADDRESS_WIDTH" -> IntParam(axiAddrWidth),
-      "AXI_DATA_WIDTH" -> IntParam(axiDataWidth),
-      "AXI_USER_WIDTH" -> IntParam(axiUserWidth),
-      "AXI_ID_WIDTH" -> IntParam(axiIdWidth),
-      "PMP_ENTRIES" -> IntParam(pmpEntries)) ++
-    (0 until execRegAvail).map(i => s"EXEC_REG_BASE_$i" -> IntParam(exeRegBase(i))).toMap ++
-    (0 until execRegAvail).map(i => s"EXEC_REG_SZ_$i" -> IntParam(exeRegSz(i))).toMap ++
-    (0 until cacheRegAvail).map(i => s"CACHE_REG_BASE_$i" -> IntParam(cacheRegBase(i))).toMap ++
-    (0 until cacheRegAvail).map(i => s"CACHE_REG_SZ_$i" -> IntParam(cacheRegSz(i))).toMap
-  )
-  with HasBlackBoxPath
+      "TRACEPORT_SZ" -> IntParam(traceportSz)
+    )  
+  ) with HasBlackBoxPath
 {
   val io = IO(new Bundle {
     val clk_i = Input(Clock())
-    val rst_ni = Input(Bool())
+    val rst = Input(Bool())
     val boot_addr_i = Input(UInt(64.W))
     val hart_id_i = Input(UInt(64.W))
     val irq_i = Input(UInt(2.W))
@@ -144,8 +139,9 @@ class CVA6CoreBlackbox(
   val cva6VsrcDir = s"$chipyardDir/generators/cva6/src/main/resources/cva6/vsrc"
 
   // pre-process the verilog to remove "includes" and combine into one file
-  val make = s"make -C ${cva6VsrcDir} default "
-  val proc = if (traceportEnabled) make + "EXTRA_PREPROC_DEFINES=FIRESIM_TRACE" else make
+  val preproc_defines = "EXTRA_PREPROC_DEFINES=SYNTHESIS"
+  val make = s"make -C ${cva6VsrcDir} default " + preproc_defines
+  val proc = if (traceportEnabled) make + preproc_defines +" FIRESIM_TRACE" else make
   require (proc.! == 0, "Failed to run preprocessing step")
 
   // add wrapper/blackbox after it is pre-processed
